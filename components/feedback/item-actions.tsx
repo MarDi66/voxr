@@ -90,14 +90,14 @@ export function ItemActions({
               )}
             </DropdownMenuItem>
           )}
+          {isAdmin && !isOwn && (
+            <DropdownMenuSeparator />
+          )}
           {!isOwn && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
-                <Flag className="mr-2 h-4 w-4" />
-                Report
-              </DropdownMenuItem>
-            </>
+            <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+              <Flag className="mr-2 h-4 w-4" />
+              Report
+            </DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>

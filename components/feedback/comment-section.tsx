@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 import { createCommentSchema, type CreateCommentInput } from "@/lib/validators/feedback";
 import { createComment } from "@/actions/comments";
@@ -31,6 +32,7 @@ type Comment = {
   status: string;
   created_at: string;
   is_own: boolean;
+  is_item_author: boolean;
   reactionCounts: Record<string, number>;
   userReactions: string[];
 };
@@ -45,6 +47,11 @@ function CommentItem({
       <p className="text-sm">{comment.body}</p>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span>{new Date(comment.created_at).toLocaleString()}</span>
+        {comment.is_item_author && (
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+            Author
+          </Badge>
+        )}
       </div>
       <ReactionBar
         workspaceId={comment.workspace_id}
@@ -89,9 +96,6 @@ export function CommentSection({
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold">
-        Comments ({comments.length})
-      </h3>
 
       {comments.length > 0 && (
         <ScrollArea className={comments.length > 5 ? "h-100" : ""}>

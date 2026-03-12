@@ -97,7 +97,7 @@ export function FeedItemCard({
               {item.commentCount}
             </span>
             {totalReactions > 0 && (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-2">
                 {Object.entries(item.reactionCounts)
                   .slice(0, 3)
                   .map(([emoji, count]) => (
