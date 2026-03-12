@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Pin } from "lucide-react";
 import { getItemDetail, getWorkspaceBySlug, checkUserRole } from "@/lib/supabase/queries";
 
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -43,6 +44,7 @@ export default async function ItemDetailPage({
 
   const role = await checkUserRole(workspace.id);
   const isAdmin = role === "owner";
+  const isHidden = item.status === "hidden";
 
   return (
     <div className="space-y-6">
@@ -70,7 +72,9 @@ export default async function ItemDetailPage({
                   <Badge variant="outline">yours</Badge>
                 )}
               </div>
-              <CardTitle className="text-xl">{item.title}</CardTitle>
+              <CardTitle className={cn("text-xl", isHidden && "select-none blur-sm")}>
+                {isHidden ? "Hidden content" : item.title}
+              </CardTitle>
             </div>
             <ItemActions
               itemId={item.id}
@@ -82,8 +86,8 @@ export default async function ItemDetailPage({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">
-            {item.body}
+          <p className={cn("whitespace-pre-wrap text-sm leading-relaxed", isHidden && "select-none blur-sm")}>
+            {isHidden ? "This content has been hidden by a moderator." : item.body}
           </p>
           <div className="text-xs text-muted-foreground">
             {new Date(item.created_at).toLocaleString()}

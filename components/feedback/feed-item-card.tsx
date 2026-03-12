@@ -48,6 +48,8 @@ export function FeedItemCard({
     0
   );
 
+  const isHidden = item.status === "hidden";
+
   return (
     <Link href={`/w/${slug}/i/${item.id}`} className="block">
       <Card
@@ -63,12 +65,12 @@ export function FeedItemCard({
               {item.is_flagged && (
                 <Pin className="h-4 w-4 shrink-0 text-amber-600" />
               )}
-              <CardTitle className="text-base leading-snug">
-                {item.title}
+              <CardTitle className={cn("text-base leading-snug", isHidden && "select-none blur-sm")}>
+                {isHidden ? "Hidden content" : item.title}
               </CardTitle>
             </div>
             <div className="flex items-center gap-1">
-              {isOwner && (
+              {isOwner && !isHidden && (
                 <FlagButton
                   itemId={item.id}
                   workspaceId={item.workspace_id}
@@ -85,8 +87,8 @@ export function FeedItemCard({
           </div>
         </CardHeader>
         <CardContent>
-          <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
-            {item.body}
+          <p className={cn("mb-3 line-clamp-2 text-sm text-muted-foreground", isHidden && "select-none blur-sm")}>
+            {isHidden ? "This content has been hidden by a moderator." : item.body}
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span>

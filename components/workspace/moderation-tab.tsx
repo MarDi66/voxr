@@ -8,7 +8,6 @@ import { Eye, EyeOff, ExternalLink, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
@@ -33,7 +32,7 @@ import {
 } from "@/components/ui/drawer";
 
 import { resolveReport, getReports } from "@/actions/moderation";
-import { setItemStatus } from "@/actions/feedback";
+import { setItemStatus, setCommentStatus } from "@/actions/feedback";
 import { createClient } from "@/lib/supabase/client";
 
 type ItemPreview = {
@@ -63,13 +62,22 @@ type Report = {
 type HiddenItem = {
   id: string;
   title: string;
+  body: string;
   category: string;
+  status: string;
+};
+
+type HiddenComment = {
+  id: string;
+  item_id: string;
+  body: string;
   status: string;
 };
 
 export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug: string }) {
   const [reports, setReports] = useState<Report[]>([]);
   const [hiddenItems, setHiddenItems] = useState<HiddenItem[]>([]);
+  const [hiddenComments, setHiddenComments] = useState<HiddenComment[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function fetchData() {
@@ -79,15 +87,22 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
 
     setReports(reportsResult.data || []);
 
-    // Fetch hidden items
     const supabase = createClient();
-    const { data: hidden } = await supabase
-      .from("feedback_items")
-      .select("id, title, category, status")
-      .eq("workspace_id", workspaceId)
-      .eq("status", "hidden");
+    const [{ data: hidden }, { data: hiddenCmts }] = await Promise.all([
+      supabase
+        .from("feedback_items")
+        .select("id, title, body, category, status")
+        .eq("workspace_id", workspaceId)
+        .eq("status", "hidden"),
+      supabase
+        .from("comments")
+        .select("id, item_id, body, status")
+        .eq("workspace_id", workspaceId)
+        .eq("status", "hidden"),
+    ]);
 
     setHiddenItems(hidden || []);
+    setHiddenComments(hiddenCmts || []);
     setLoading(false);
   }
 
@@ -98,14 +113,22 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
       setReports(reportsResult.data || []);
 
       const supabase = createClient();
-      const { data: hidden } = await supabase
-        .from("feedback_items")
-        .select("id, title, category, status")
-        .eq("workspace_id", workspaceId)
-        .eq("status", "hidden");
+      const [{ data: hidden }, { data: hiddenCmts }] = await Promise.all([
+        supabase
+          .from("feedback_items")
+          .select("id, title, body, category, status")
+          .eq("workspace_id", workspaceId)
+          .eq("status", "hidden"),
+        supabase
+          .from("comments")
+          .select("id, item_id, body, status")
+          .eq("workspace_id", workspaceId)
+          .eq("status", "hidden"),
+      ]);
 
       if (!cancelled) {
         setHiddenItems(hidden || []);
+        setHiddenComments(hiddenCmts || []);
         setLoading(false);
       }
     });
@@ -122,18 +145,28 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
     fetchData();
   }
 
-  async function handleUnhide(itemId: string) {
+  async function handleUnhideItem(itemId: string) {
     const result = await setItemStatus(itemId, "published");
     if (result.error) {
       toast.error(result.error);
       return;
     }
-    toast.success("Item restored");
+    toast.success("Feedback restored");
+    fetchData();
+  }
+
+  async function handleUnhideComment(commentId: string) {
+    const result = await setCommentStatus(commentId, "published");
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Comment restored");
     fetchData();
   }
 
   const pendingReports = reports.filter((r) => r.status === "pending");
-  const resolvedReports = reports.filter((r) => r.status !== "pending");
+  const hiddenCount = hiddenItems.length + hiddenComments.length;
 
   return (
     <Tabs defaultValue="reports">
@@ -142,7 +175,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
           Reports {pendingReports.length > 0 && `(${pendingReports.length})`}
         </TabsTrigger>
         <TabsTrigger value="hidden">
-          Hidden Content {hiddenItems.length > 0 && `(${hiddenItems.length})`}
+          Hidden Content {hiddenCount > 0 && `(${hiddenCount})`}
         </TabsTrigger>
       </TabsList>
 
@@ -167,33 +200,35 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                     </span>
                   </div>
                   <div className="flex gap-1">
-                    {report.target_type === "item" && (
-                      <AlertDialog>
-                        <AlertDialogTrigger render={<Button variant="ghost" size="sm" className="bg-amber-500/10" />}>
-                          <EyeOff className="mr-1 h-4 w-4" />
-                          Hide Content
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Hide this content?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will hide the reported content from all workspace members.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={async () => {
+                    <AlertDialog>
+                      <AlertDialogTrigger render={<Button variant="ghost" size="sm" className="bg-amber-500/10" />}>
+                        <EyeOff className="mr-1 h-4 w-4" />
+                        Hide Content
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Hide this content?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will hide the reported {report.target_type === "item" ? "feedback" : "comment"} from all workspace members.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              if (report.target_type === "item") {
                                 await setItemStatus(report.target_id, "hidden");
-                                await handleResolve(report.id, "resolved");
-                              }}
-                            >
-                              Hide & Resolve
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
+                              } else {
+                                await setCommentStatus(report.target_id, "hidden");
+                              }
+                              await handleResolve(report.id, "resolved");
+                            }}
+                          >
+                            Hide & Resolve
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -226,59 +261,33 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
           ))
         )}
 
-        {resolvedReports.length > 0 && (
-          <>
-            <Separator />
-            <h3 className="font-semibold text-sm text-muted-foreground">
-              Resolved ({resolvedReports.length})
-            </h3>
-            {resolvedReports.map((report) => (
-              <Card key={report.id} className="opacity-60">
-                <CardContent className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{report.target_type}</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {report.reason || "No reason"}
-                    </span>
-                  </div>
-                  <Badge
-                    variant={report.status === "resolved" ? "default" : "secondary"}
-                  >
-                    {report.status}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
-          </>
-        )}
       </TabsContent>
 
       <TabsContent value="hidden" className="mt-4 space-y-4">
-        {hiddenItems.length === 0 ? (
+        {hiddenCount === 0 ? (
           <Card>
             <CardContent className="py-6 text-center text-sm text-muted-foreground">
               No hidden content
             </CardContent>
           </Card>
         ) : (
-          hiddenItems.map((item) => (
-            <Card key={item.id}>
-              <CardContent className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{item.category}</Badge>
-                  <span className="text-sm font-medium">{item.title}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleUnhide(item.id)}
-                >
-                  <Eye className="mr-1 h-4 w-4" />
-                  Unhide
-                </Button>
-              </CardContent>
-            </Card>
-          ))
+          <>
+            {hiddenItems.map((item) => (
+              <HiddenItemCard
+                key={item.id}
+                item={item}
+                onUnhide={() => handleUnhideItem(item.id)}
+              />
+            ))}
+            {hiddenComments.map((comment) => (
+              <HiddenCommentCard
+                key={comment.id}
+                comment={comment}
+                slug={slug}
+                onUnhide={() => handleUnhideComment(comment.id)}
+              />
+            ))}
+          </>
         )}
       </TabsContent>
     </Tabs>
@@ -291,6 +300,103 @@ function getItemIdForReport(report: Report): string {
   }
   const preview = report.target_preview as CommentPreview | null;
   return preview?.item_id ?? "";
+}
+
+function HiddenItemCard({
+  item,
+  onUnhide,
+}: {
+  item: HiddenItem;
+  onUnhide: () => void;
+}) {
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <Card>
+      <CardContent className="py-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">feedback</Badge>
+            <Badge variant="secondary">{item.category}</Badge>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRevealed(!revealed)}
+            >
+              {revealed ? (
+                <><EyeOff className="mr-1 h-4 w-4" />Blur</>
+              ) : (
+                <><Eye className="mr-1 h-4 w-4" />Reveal</>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onUnhide}
+            >
+              <Eye className="mr-1 h-4 w-4" />
+              Unhide
+            </Button>
+          </div>
+        </div>
+        <p className={`text-sm font-medium select-none transition-all ${revealed ? "" : "blur-sm"}`}>{item.title}</p>
+        <p className={`text-sm text-muted-foreground line-clamp-2 select-none transition-all ${revealed ? "" : "blur-sm"}`}>{item.body}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HiddenCommentCard({
+  comment,
+  slug,
+  onUnhide,
+}: {
+  comment: HiddenComment;
+  slug: string;
+  onUnhide: () => void;
+}) {
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <Card>
+      <CardContent className="py-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <Badge variant="outline">comment</Badge>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRevealed(!revealed)}
+            >
+              {revealed ? (
+                <><EyeOff className="mr-1 h-4 w-4" />Blur</>
+              ) : (
+                <><Eye className="mr-1 h-4 w-4" />Reveal</>
+              )}
+            </Button>
+            <Link
+              href={`/w/${slug}/i/${comment.item_id}`}
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
+              <ExternalLink className="mr-1 h-4 w-4" />
+              Go to Feedback
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onUnhide}
+            >
+              <Eye className="mr-1 h-4 w-4" />
+              Unhide
+            </Button>
+          </div>
+        </div>
+        <p className={`text-sm text-muted-foreground line-clamp-2 select-none transition-all ${revealed ? "" : "blur-sm"}`}>{comment.body}</p>
+      </CardContent>
+    </Card>
+  );
 }
 
 function ReportPreview({ report, slug }: { report: Report; slug: string }) {

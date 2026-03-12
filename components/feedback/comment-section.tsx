@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Flag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,9 +20,18 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import { createCommentSchema, type CreateCommentInput } from "@/lib/validators/feedback";
 import { createComment } from "@/actions/comments";
+import { reportTarget } from "@/actions/moderation";
 import { ReactionBar } from "./reaction-bar";
 
 type Comment = {
@@ -42,9 +52,50 @@ function CommentItem({
 }: {
   comment: Comment;
 }) {
+  const router = useRouter();
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
+
+  async function handleReport() {
+    setIsReporting(true);
+    const result = await reportTarget({
+      workspaceId: comment.workspace_id,
+      targetType: "comment",
+      targetId: comment.id,
+      reason: reportReason,
+    });
+    setIsReporting(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Report submitted");
+    setReportReason("");
+    setShowReportDialog(false);
+    router.refresh();
+  }
+
+  const isHidden = comment.status === "hidden";
+
   return (
     <div className="space-y-2 py-3">
-      <p className="text-sm">{comment.body}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className={`text-sm ${isHidden ? "select-none blur-sm pl-3 pb-2" : ""}`}>
+          {isHidden ? "This comment has been hidden by a moderator." : comment.body}
+        </p>
+        {!comment.is_own && !isHidden && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+            onClick={() => setShowReportDialog(true)}
+            title="Report comment"
+          >
+            <Flag className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span>{new Date(comment.created_at).toLocaleString()}</span>
         {comment.is_item_author && (
@@ -53,13 +104,42 @@ function CommentItem({
           </Badge>
         )}
       </div>
-      <ReactionBar
-        workspaceId={comment.workspace_id}
-        targetType="comment"
-        targetId={comment.id}
-        reactionCounts={comment.reactionCounts}
-        userReactions={comment.userReactions}
-      />
+      {!isHidden && (
+        <ReactionBar
+          workspaceId={comment.workspace_id}
+          targetType="comment"
+          targetId={comment.id}
+          reactionCounts={comment.reactionCounts}
+          userReactions={comment.userReactions}
+        />
+      )}
+
+      {!isHidden && (
+        <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report this comment</DialogTitle>
+            <DialogDescription>
+              Help us understand why this comment should be reviewed.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Reason for reporting (optional)"
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReportDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleReport} disabled={isReporting}>
+              {isReporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      )}
     </div>
   );
 }

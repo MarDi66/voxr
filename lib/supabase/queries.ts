@@ -27,7 +27,6 @@ export async function getFeed(
     .from("feedback_items_safe")
     .select("*")
     .eq("workspace_id", workspaceId)
-    .eq("status", "published")
     .eq("is_flagged", true)
     .limit(1);
 
@@ -36,7 +35,6 @@ export async function getFeed(
     .from("feedback_items_safe")
     .select("*")
     .eq("workspace_id", workspaceId)
-    .eq("status", "published")
     .eq("is_flagged", false);
 
   if (options?.category && options.category !== "all") {
@@ -128,12 +126,11 @@ export async function getItemDetail(itemId: string) {
 
   if (error || !item) return null;
 
-  // Get comments via safe view
+  // Get comments via safe view (including hidden — UI shows blur placeholder)
   const { data: comments } = await supabase
     .from("comments_safe")
     .select("*")
     .eq("item_id", itemId)
-    .eq("status", "published")
     .order("created_at", { ascending: true });
 
   // Get reactions for the item

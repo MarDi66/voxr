@@ -104,6 +104,28 @@ export async function setItemStatus(itemId: string, status: "published" | "hidde
   return { success: true };
 }
 
+export async function setCommentStatus(commentId: string, status: "published" | "hidden") {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase
+    .from("comments")
+    .update({ status })
+    .eq("id", commentId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
 export async function toggleFlagItem(workspaceId: string, itemId: string) {
   const supabase = await createClient();
   const {
