@@ -54,7 +54,6 @@ export function CreateFeedbackForm({
     }
     toast.success("Feedback posted!");
     router.push(`/w/${slug}/i/${result.itemId}`);
-    router.refresh();
   }
 
   return (

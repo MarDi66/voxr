@@ -15,7 +15,7 @@ export default async function NewFeedbackPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto">
       <CreateFeedbackForm workspaceId={workspace.id} slug={slug} />
     </div>
   );

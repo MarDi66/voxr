@@ -25,13 +25,11 @@ export default async function OnboardingPage({
     .limit(1);
 
   const resolvedParams = await searchParams;
-  const hasToken = !!resolvedParams.token;
 
-  // If user already has a workspace and isn't trying to join another, redirect
-  if (memberships && memberships.length > 0 && !hasToken) {
-    const ws = memberships[0].workspaces as unknown as { slug: string };
-    redirect(`/w/${ws.slug}`);
-  }
+  const existingWorkspaceSlug =
+    memberships && memberships.length > 0
+      ? (memberships[0].workspaces as unknown as { slug: string }).slug
+      : undefined;
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
@@ -42,7 +40,10 @@ export default async function OnboardingPage({
             Create a new workspace or join an existing one
           </p>
         </div>
-        <OnboardingTabs defaultToken={resolvedParams.token} />
+        <OnboardingTabs
+          defaultToken={resolvedParams.token}
+          existingWorkspaceSlug={existingWorkspaceSlug}
+        />
       </div>
     </div>
   );

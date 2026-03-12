@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createItemSchema, updateItemSchema } from "@/lib/validators/feedback";
+import crypto from "crypto";
 
 export async function createItem(input: {
   workspaceId: string;
@@ -23,24 +24,25 @@ export async function createItem(input: {
     return { error: "Not authenticated" };
   }
 
+  const itemId = crypto.randomUUID();
+
   // author_id is set by the trigger — pass a placeholder that will be overwritten
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("feedback_items")
     .insert({
+      id: itemId,
       workspace_id: parsed.data.workspaceId,
       title: parsed.data.title,
       body: parsed.data.body,
       category: parsed.data.category,
       author_id: user.id, // will be overwritten by trigger
-    })
-    .select("id")
-    .single();
+    });
 
   if (error) {
     return { error: error.message };
   }
 
-  return { success: true, itemId: data.id };
+  return { success: true, itemId };
 }
 
 export async function updateItem(input: {

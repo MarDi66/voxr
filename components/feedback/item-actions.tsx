@@ -64,7 +64,6 @@ export function ItemActions({
     }
     toast.success("Feedback deleted");
     router.push(`/w/${slug}`);
-    router.refresh();
   }
 
   async function handleToggleVisibility() {

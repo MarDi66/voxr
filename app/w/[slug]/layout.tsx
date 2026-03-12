@@ -38,18 +38,11 @@ export default async function WorkspaceLayout({
       role: m.role,
     })) || [];
 
-  // Get current user role
-  const currentMembership = memberships?.find(
-    (m) => m.workspace_id === workspace.id
-  );
-  const role = currentMembership?.role || "member";
-
   return (
     <div className="min-h-screen">
       <WorkspaceHeader
         workspace={workspace}
         workspaces={workspaces}
-        currentRole={role}
       />
       <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
     </div>

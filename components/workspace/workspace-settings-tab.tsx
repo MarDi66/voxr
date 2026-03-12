@@ -16,8 +16,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { updateWorkspaceSchema, type UpdateWorkspaceInput } from "@/lib/validators/workspaces";
-import { updateWorkspace } from "@/actions/workspaces";
+import { updateWorkspace, deleteWorkspace } from "@/actions/workspaces";
 import { useRouter } from "next/navigation";
 
 type Workspace = {
@@ -26,7 +37,13 @@ type Workspace = {
   slug: string;
 };
 
-export function WorkspaceSettingsTab({ workspace }: { workspace: Workspace }) {
+export function WorkspaceSettingsTab({
+  workspace,
+  isOwner,
+}: {
+  workspace: Workspace;
+  isOwner: boolean;
+}) {
   const router = useRouter();
   const form = useForm<UpdateWorkspaceInput>({
     resolver: zodResolver(updateWorkspaceSchema),
@@ -46,42 +63,113 @@ export function WorkspaceSettingsTab({ workspace }: { workspace: Workspace }) {
     router.refresh();
   }
 
+  async function handleDelete() {
+    const result = await deleteWorkspace(workspace.id);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Workspace deleted");
+    router.push("/onboarding");
+  }
+
+  if (!isOwner) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>General</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">
+              Workspace Name
+            </p>
+            <p className="text-lg">{workspace.name}</p>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Slug: <code className="rounded bg-muted px-1">{workspace.slug}</code>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>General</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Workspace Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="text-sm text-muted-foreground">
-              Slug: <code className="rounded bg-muted px-1">{workspace.slug}</code>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>General</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Workspace Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="text-sm text-muted-foreground">
+                Slug: <code className="rounded bg-muted px-1">{workspace.slug}</code>
+              </div>
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Save
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Delete workspace</p>
+              <p className="text-sm text-muted-foreground">
+                This action cannot be undone. All data will be permanently
+                deleted.
+              </p>
             </div>
-            <Button
-              type="submit"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Save
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+            <AlertDialog>
+              <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
+                  Delete
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete workspace?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete &quot;{workspace.name}&quot; and
+                    all its data including feedback, comments, and members. This
+                    action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>
+                    Delete Workspace
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

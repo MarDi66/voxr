@@ -23,6 +23,7 @@ type Invite = {
   id: string;
   invited_email: string | null;
   role: string;
+  status: string;
   created_at: string;
   expires_at: string | null;
   used_at: string | null;
@@ -41,11 +42,35 @@ export function InvitesTab({
     const supabase = createClient();
     const { data } = await supabase
       .from("workspace_invites")
-      .select("id, invited_email, role, created_at, expires_at, used_at")
+      .select("id, invited_email, role, status, created_at, expires_at, used_at")
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false });
 
-    setInvites(data || []);
+    if (data) {
+      // Update expired invites that still have 'active' status
+      const expired = data.filter(
+        (i) =>
+          i.status === "active" &&
+          i.expires_at &&
+          new Date(i.expires_at) < new Date()
+      );
+      if (expired.length > 0) {
+        await supabase
+          .from("workspace_invites")
+          .update({ status: "expired" })
+          .in(
+            "id",
+            expired.map((i) => i.id)
+          );
+      }
+      setInvites(
+        data.map((i) =>
+          expired.some((e) => e.id === i.id) ? { ...i, status: "expired" } : i
+        )
+      );
+    } else {
+      setInvites([]);
+    }
     setLoading(false);
   }
 
@@ -54,14 +79,38 @@ export function InvitesTab({
     const supabase = createClient();
     supabase
       .from("workspace_invites")
-      .select("id, invited_email, role, created_at, expires_at, used_at")
+      .select("id, invited_email, role, status, created_at, expires_at, used_at")
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        if (!cancelled) {
-          setInvites(data || []);
-          setLoading(false);
+      .then(async ({ data }) => {
+        if (cancelled) return;
+        if (data) {
+          const expired = data.filter(
+            (i) =>
+              i.status === "active" &&
+              i.expires_at &&
+              new Date(i.expires_at) < new Date()
+          );
+          if (expired.length > 0) {
+            await supabase
+              .from("workspace_invites")
+              .update({ status: "expired" })
+              .in(
+                "id",
+                expired.map((i) => i.id)
+              );
+          }
+          setInvites(
+            data.map((i) =>
+              expired.some((e) => e.id === i.id)
+                ? { ...i, status: "expired" }
+                : i
+            )
+          );
+        } else {
+          setInvites([]);
         }
+        setLoading(false);
       });
     return () => { cancelled = true; };
   }, [workspaceId]);
@@ -131,10 +180,11 @@ export function InvitesTab({
                     <Badge variant="outline">{invite.role}</Badge>
                   </TableCell>
                   <TableCell>
-                    {invite.used_at ? (
+                    {invite.status === "used" || invite.used_at ? (
                       <Badge variant="secondary">Used</Badge>
-                    ) : invite.expires_at &&
-                      new Date(invite.expires_at) < new Date() ? (
+                    ) : invite.status === "expired" ||
+                      (invite.expires_at &&
+                        new Date(invite.expires_at) < new Date()) ? (
                       <Badge variant="destructive">Expired</Badge>
                     ) : (
                       <Badge>Active</Badge>

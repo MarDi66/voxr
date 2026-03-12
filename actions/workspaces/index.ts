@@ -49,13 +49,13 @@ export async function createWorkspace(input: { name: string; slug: string }) {
     return { error: wsError.message };
   }
 
-  // Add creator as admin
+  // Add creator as owner
   const { error: memberError } = await supabase
     .from("workspace_members")
     .insert({
       workspace_id: workspaceId,
       user_id: user.id,
-      role: "admin",
+      role: "owner",
       status: "active",
     });
 
@@ -88,7 +88,7 @@ export async function consumeInvite(input: { inviteToken: string }) {
     .from("workspace_invites")
     .select("*")
     .eq("token_hash", tokenHash)
-    .is("used_at", null)
+    .eq("status", "active")
     .single();
 
   if (inviteError || !invite) {
@@ -97,6 +97,10 @@ export async function consumeInvite(input: { inviteToken: string }) {
 
   // Check expiry
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+    await supabase
+      .from("workspace_invites")
+      .update({ status: "expired" })
+      .eq("id", invite.id);
     return { error: "This invite has expired" };
   }
 
@@ -123,13 +127,13 @@ export async function consumeInvite(input: { inviteToken: string }) {
     return { success: true, slug: ws?.slug || "" };
   }
 
-  // Create membership
+  // Create membership (invites always create 'member' role)
   const { error: memberError } = await supabase
     .from("workspace_members")
     .insert({
       workspace_id: invite.workspace_id,
       user_id: user.id,
-      role: invite.role,
+      role: "member",
       status: "active",
     });
 
@@ -140,7 +144,7 @@ export async function consumeInvite(input: { inviteToken: string }) {
   // Mark invite as used
   await supabase
     .from("workspace_invites")
-    .update({ used_at: new Date().toISOString(), used_by: user.id })
+    .update({ used_at: new Date().toISOString(), used_by: user.id, status: "used" })
     .eq("id", invite.id);
 
   // Get workspace slug
@@ -156,7 +160,6 @@ export async function consumeInvite(input: { inviteToken: string }) {
 export async function createInvite(input: {
   workspaceId: string;
   invitedEmail?: string;
-  role?: "admin" | "member";
 }) {
   const parsed = createInviteSchema.safeParse(input);
   if (!parsed.success) {
@@ -180,7 +183,7 @@ export async function createInvite(input: {
     workspace_id: parsed.data.workspaceId,
     token_hash: tokenHash,
     invited_email: parsed.data.invitedEmail || null,
-    role: parsed.data.role || "member",
+    role: "member",
     created_by: user.id,
     expires_at: new Date(
       Date.now() + 7 * 24 * 60 * 60 * 1000
@@ -267,4 +270,107 @@ export async function getUserWorkspaces() {
   }
 
   return { data: data || [] };
+}
+
+export async function transferOwnership(
+  workspaceId: string,
+  newOwnerId: string
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase.rpc("transfer_ownership", {
+    wid: workspaceId,
+    new_owner_id: newOwnerId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function removeMember(
+  workspaceId: string,
+  targetUserId: string
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  if (targetUserId === user.id) {
+    return { error: "You cannot remove yourself" };
+  }
+
+  // Verify ownership
+  const { data: member } = await supabase
+    .from("workspace_members")
+    .select("role")
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (!member || member.role !== "owner") {
+    return { error: "Only the owner can remove members" };
+  }
+
+  const { error } = await supabase
+    .from("workspace_members")
+    .update({ status: "left" })
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", targetUserId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function deleteWorkspace(workspaceId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  // Verify ownership
+  const { data: member } = await supabase
+    .from("workspace_members")
+    .select("role")
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (!member || member.role !== "owner") {
+    return { error: "Only the owner can delete a workspace" };
+  }
+
+  const { error } = await supabase
+    .from("workspaces")
+    .delete()
+    .eq("id", workspaceId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
 }

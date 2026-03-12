@@ -37,7 +37,7 @@ export function FeedItemCard({
   );
 
   return (
-    <Link href={`/w/${slug}/i/${item.id}`}>
+    <Link href={`/w/${slug}/i/${item.id}`} className="block">
       <Card className="transition-colors hover:bg-accent/50">
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">

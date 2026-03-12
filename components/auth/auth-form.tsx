@@ -3,7 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -40,6 +40,8 @@ export function AuthForm() {
   const [isVerifying, setIsVerifying] = useState(false);
   const otpFieldId = useId();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("next") || "/onboarding";
 
   const emailForm = useForm<OtpRequestInput>({
     resolver: zodResolver(otpRequestSchema),
@@ -77,7 +79,7 @@ export function AuthForm() {
         return;
       }
       toast.success("Signed in successfully");
-      router.push("/onboarding");
+      router.push(redirectTo);
       router.refresh();
     } finally {
       setIsVerifying(false);

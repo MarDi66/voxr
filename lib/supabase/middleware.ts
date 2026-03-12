@@ -43,15 +43,20 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
+    const returnTo = request.nextUrl.pathname + request.nextUrl.search;
     url.pathname = "/auth";
+    url.searchParams.set("next", returnTo);
     return NextResponse.redirect(url);
   }
 
   // Redirect authenticated users away from auth page
   if (user && pathname === "/auth") {
     const url = request.nextUrl.clone();
-    url.pathname = "/onboarding";
-    return NextResponse.redirect(url);
+    const next = request.nextUrl.searchParams.get("next") || "/onboarding";
+    // Prevent open redirect — only allow relative paths
+    const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/onboarding";
+    const target = new URL(safeNext, request.nextUrl.origin);
+    return NextResponse.redirect(target);
   }
 
   return supabaseResponse;

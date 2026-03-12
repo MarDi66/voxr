@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -26,11 +27,9 @@ type Workspace = {
 export function WorkspaceHeader({
   workspace,
   workspaces,
-  currentRole,
 }: {
   workspace: { id: string; name: string; slug: string };
   workspaces: Workspace[];
-  currentRole: string;
 }) {
   const router = useRouter();
 
@@ -55,14 +54,16 @@ export function WorkspaceHeader({
               {workspace.name}
               <ChevronDown className="ml-1 h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {workspaces.map((ws) => (
-                <DropdownMenuItem key={ws.id} onClick={() => router.push(`/w/${ws.slug}`)}>
-                  {ws.name}
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent align="start" className="w-fit">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {workspaces.map((ws) => (
+                  <DropdownMenuItem key={ws.id} onClick={() => router.push(`/w/${ws.slug}`)}>
+                    {ws.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/onboarding")}>
                 Create or join workspace
@@ -79,13 +80,11 @@ export function WorkspaceHeader({
             </Button>
           </Link>
 
-          {currentRole === "admin" && (
-            <Link href={`/w/${workspace.slug}/settings`}>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-          )}
+          <Link href={`/w/${workspace.slug}/settings`}>
+            <Button variant="ghost" size="sm">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </Link>
 
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="h-4 w-4" />
