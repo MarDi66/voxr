@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Trash2, EyeOff } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,21 +17,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { createCommentSchema, type CreateCommentInput } from "@/lib/validators/feedback";
-import { createComment, deleteComment, setCommentStatus } from "@/actions/comments";
+import { createComment } from "@/actions/comments";
 import { ReactionBar } from "./reaction-bar";
 
 type Comment = {
@@ -48,64 +37,14 @@ type Comment = {
 
 function CommentItem({
   comment,
-  isAdmin,
 }: {
   comment: Comment;
-  isAdmin: boolean;
 }) {
-  const router = useRouter();
-
-  async function handleDelete() {
-    const result = await deleteComment(comment.id);
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Comment deleted");
-    router.refresh();
-  }
-
-  async function handleHide() {
-    const result = await setCommentStatus(comment.id, "hidden");
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Comment hidden");
-    router.refresh();
-  }
-
   return (
     <div className="space-y-2 py-3">
       <p className="text-sm">{comment.body}</p>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span>{new Date(comment.created_at).toLocaleString()}</span>
-        {comment.is_own && (
-          <AlertDialog>
-            <AlertDialogTrigger render={<Button variant="ghost" size="sm" className="h-6 px-2" />}>
-              <Trash2 className="h-3 w-3" />
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete comment?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-        {isAdmin && !comment.is_own && (
-          <Button variant="ghost" size="sm" className="h-6 px-2" onClick={handleHide}>
-            <EyeOff className="h-3 w-3" />
-          </Button>
-        )}
       </div>
       <ReactionBar
         workspaceId={comment.workspace_id}
@@ -122,12 +61,10 @@ export function CommentSection({
   workspaceId,
   itemId,
   comments,
-  isAdmin,
 }: {
   workspaceId: string;
   itemId: string;
   comments: Comment[];
-  isAdmin: boolean;
 }) {
   const router = useRouter();
   const form = useForm<CreateCommentInput>({
@@ -161,7 +98,7 @@ export function CommentSection({
           <div className="space-y-1">
             {comments.map((comment, i) => (
               <div key={comment.id}>
-                <CommentItem comment={comment} isAdmin={isAdmin} />
+                <CommentItem comment={comment} />
                 {i < comments.length - 1 && <Separator />}
               </div>
             ))}

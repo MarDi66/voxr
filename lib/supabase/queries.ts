@@ -22,12 +22,22 @@ export async function getFeed(
 ) {
   const supabase = await createClient();
 
-  // Use the safe view that excludes author_id
+  // 1. Always fetch the flagged item (shown on top regardless of filters)
+  const { data: flaggedItems } = await supabase
+    .from("feedback_items_safe")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .eq("status", "published")
+    .eq("is_flagged", true)
+    .limit(1);
+
+  // 2. Fetch regular (non-flagged) items with filters applied
   let query = supabase
     .from("feedback_items_safe")
     .select("*")
     .eq("workspace_id", workspaceId)
-    .eq("status", "published");
+    .eq("status", "published")
+    .eq("is_flagged", false);
 
   if (options?.category && options.category !== "all") {
     query = query.eq("category", options.category);
@@ -41,9 +51,14 @@ export async function getFeed(
 
   query = query.order("created_at", { ascending: false });
 
-  const { data: items, error } = await query;
+  const { data: regularItems, error } = await query;
 
-  if (error || !items) return [];
+  if (error) return [];
+
+  // Combine: flagged first, then regular items
+  const items = [...(flaggedItems || []), ...(regularItems || [])];
+
+  if (items.length === 0) return [];
 
   // Get comment counts and reaction counts for each item
   const itemIds = items.map((i) => i.id);
@@ -76,11 +91,29 @@ export async function getFeed(
       (reactionCountMap[r.target_id][r.emoji] || 0) + 1;
   });
 
-  return items.map((item) => ({
+  const enriched = items.map((item) => ({
     ...item,
     commentCount: commentCountMap[item.id] || 0,
     reactionCounts: reactionCountMap[item.id] || {},
   }));
+
+  if (options?.sort === "top") {
+    // Keep flagged item(s) on top, sort the rest by engagement
+    const flagged = enriched.filter((i) => i.is_flagged);
+    const rest = enriched.filter((i) => !i.is_flagged);
+    rest.sort((a, b) => {
+      const totalA =
+        a.commentCount +
+        Object.values(a.reactionCounts).reduce((s, n) => s + n, 0);
+      const totalB =
+        b.commentCount +
+        Object.values(b.reactionCounts).reduce((s, n) => s + n, 0);
+      return totalB - totalA;
+    });
+    return [...flagged, ...rest];
+  }
+
+  return enriched;
 }
 
 export async function getItemDetail(itemId: string) {

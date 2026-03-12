@@ -46,7 +46,7 @@ export function SettingsTabs({
 
       {isOwner && (
         <TabsContent value="moderation" className="mt-4">
-          <ModerationTab workspaceId={workspace.id} />
+          <ModerationTab workspaceId={workspace.id} slug={workspace.slug} />
         </TabsContent>
       )}
     </Tabs>

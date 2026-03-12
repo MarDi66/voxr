@@ -82,28 +82,6 @@ export async function updateItem(input: {
   return { success: true };
 }
 
-export async function deleteItem(itemId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Not authenticated" };
-  }
-
-  const { error } = await supabase
-    .from("feedback_items")
-    .delete()
-    .eq("id", itemId);
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { success: true };
-}
-
 export async function setItemStatus(itemId: string, status: "published" | "hidden") {
   const supabase = await createClient();
   const {
@@ -118,6 +96,28 @@ export async function setItemStatus(itemId: string, status: "published" | "hidde
     .from("feedback_items")
     .update({ status })
     .eq("id", itemId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function toggleFlagItem(workspaceId: string, itemId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase.rpc("toggle_flag_item", {
+    p_workspace_id: workspaceId,
+    p_item_id: itemId,
+  });
 
   if (error) {
     return { error: error.message };

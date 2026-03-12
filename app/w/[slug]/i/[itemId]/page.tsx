@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Pin } from "lucide-react";
 import { getItemDetail, getWorkspaceBySlug, checkUserRole } from "@/lib/supabase/queries";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +42,7 @@ export default async function ItemDetailPage({
   }
 
   const role = await checkUserRole(workspace.id);
-  const isAdmin = role === "admin";
+  const isAdmin = role === "owner";
 
   return (
     <div className="space-y-6">
@@ -56,6 +57,12 @@ export default async function ItemDetailPage({
                 >
                   {categoryEmojis[item.category]} {item.category}
                 </Badge>
+                {item.is_flagged && (
+                  <Badge variant="secondary" className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                    <Pin className="mr-1 h-3 w-3" />
+                    Pinned
+                  </Badge>
+                )}
                 {item.status === "hidden" && (
                   <Badge variant="destructive">Hidden</Badge>
                 )}
@@ -68,10 +75,9 @@ export default async function ItemDetailPage({
             <ItemActions
               itemId={item.id}
               workspaceId={workspace.id}
-              slug={slug}
               isOwn={item.is_own}
               isAdmin={isAdmin}
-              currentStatus={item.status}
+              isFlagged={item.is_flagged}
             />
           </div>
         </CardHeader>
@@ -97,7 +103,6 @@ export default async function ItemDetailPage({
         workspaceId={workspace.id}
         itemId={item.id}
         comments={item.comments}
-        isAdmin={isAdmin}
       />
     </div>
   );

@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Pin } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FlagButton } from "@/components/feedback/flag-button";
 
 type FeedItem = {
   id: string;
@@ -13,6 +15,7 @@ type FeedItem = {
   status: string;
   created_at: string;
   is_own: boolean;
+  is_flagged: boolean;
   commentCount: number;
   reactionCounts: Record<string, number>;
 };
@@ -34,9 +37,11 @@ const categoryEmojis: Record<string, string> = {
 export function FeedItemCard({
   item,
   slug,
+  isOwner = false,
 }: {
   item: FeedItem;
   slug: string;
+  isOwner?: boolean;
 }) {
   const totalReactions = Object.values(item.reactionCounts).reduce(
     (sum, count) => sum + count,
@@ -45,18 +50,38 @@ export function FeedItemCard({
 
   return (
     <Link href={`/w/${slug}/i/${item.id}`} className="block">
-      <Card className="transition-colors hover:bg-accent/50">
+      <Card
+        className={cn(
+          "transition-colors hover:bg-accent/50",
+          item.is_flagged &&
+            "ring-2 ring-amber-400 bg-amber-50/50 dark:bg-amber-950/20"
+        )}
+      >
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base leading-snug">
-              {item.title}
-            </CardTitle>
-            <Badge
-              variant="secondary"
-              className={categoryColors[item.category] || ""}
-            >
-              {categoryEmojis[item.category]} {item.category}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {item.is_flagged && (
+                <Pin className="h-4 w-4 shrink-0 text-amber-600" />
+              )}
+              <CardTitle className="text-base leading-snug">
+                {item.title}
+              </CardTitle>
+            </div>
+            <div className="flex items-center gap-1">
+              {isOwner && (
+                <FlagButton
+                  itemId={item.id}
+                  workspaceId={item.workspace_id}
+                  isFlagged={item.is_flagged}
+                />
+              )}
+              <Badge
+                variant="secondary"
+                className={categoryColors[item.category] || ""}
+              >
+                {categoryEmojis[item.category]} {item.category}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

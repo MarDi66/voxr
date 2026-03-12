@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { MoreHorizontal, Trash2, EyeOff, Eye, Flag } from "lucide-react";
+import { MoreHorizontal, Flag, Pin, PinOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,16 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -32,50 +22,26 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
-import { deleteItem, setItemStatus } from "@/actions/feedback";
+import { toggleFlagItem } from "@/actions/feedback";
 import { reportTarget } from "@/actions/moderation";
 import { useState } from "react";
 
 export function ItemActions({
   itemId,
   workspaceId,
-  slug,
   isOwn,
   isAdmin,
-  currentStatus,
+  isFlagged = false,
 }: {
   itemId: string;
   workspaceId: string;
-  slug: string;
   isOwn: boolean;
   isAdmin: boolean;
-  currentStatus: string;
+  isFlagged?: boolean;
 }) {
   const router = useRouter();
   const [reportReason, setReportReason] = useState("");
-  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
-
-  async function handleDelete() {
-    const result = await deleteItem(itemId);
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Feedback deleted");
-    router.push(`/w/${slug}`);
-  }
-
-  async function handleToggleVisibility() {
-    const newStatus = currentStatus === "published" ? "hidden" : "published";
-    const result = await setItemStatus(itemId, newStatus);
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success(newStatus === "hidden" ? "Item hidden" : "Item restored");
-    router.refresh();
-  }
 
   async function handleReport() {
     const result = await reportTarget({
@@ -92,6 +58,16 @@ export function ItemActions({
     setReportReason("");
   }
 
+  async function handleToggleFlag() {
+    const result = await toggleFlagItem(workspaceId, itemId);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(isFlagged ? "Feedback unpinned" : "Feedback pinned");
+    router.refresh();
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -99,23 +75,17 @@ export function ItemActions({
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {isOwn && (
-            <DropdownMenuItem className="text-destructive" onClick={() => setShowDeleteAlert(true)}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          )}
           {isAdmin && (
-            <DropdownMenuItem onClick={handleToggleVisibility}>
-              {currentStatus === "published" ? (
+            <DropdownMenuItem onClick={handleToggleFlag}>
+              {isFlagged ? (
                 <>
-                  <EyeOff className="mr-2 h-4 w-4" />
-                  Hide
+                  <PinOff className="mr-2 h-4 w-4" />
+                  Unpin
                 </>
               ) : (
                 <>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Unhide
+                  <Pin className="mr-2 h-4 w-4" />
+                  Pin to top
                 </>
               )}
             </DropdownMenuItem>
@@ -131,21 +101,6 @@ export function ItemActions({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this feedback?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this feedback and all its comments.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <DialogContent>

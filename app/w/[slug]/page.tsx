@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Plus } from "lucide-react";
 
-import { getWorkspaceBySlug, getFeed } from "@/lib/supabase/queries";
+import { getWorkspaceBySlug, getFeed, checkUserRole } from "@/lib/supabase/queries";
 import { FeedItemCard } from "@/components/feedback/feed-item-card";
 import { FeedFilters } from "@/components/feedback/feed-filters";
 import { Button } from "@/components/ui/button";
@@ -36,11 +36,16 @@ async function FeedContent({
   const workspace = await getWorkspaceBySlug(slug);
   if (!workspace) return null;
 
-  const items = await getFeed(workspace.id, {
-    category: searchParams.category,
-    search: searchParams.search,
-    sort: (searchParams.sort as "newest" | "top") || "newest",
-  });
+  const [items, role] = await Promise.all([
+    getFeed(workspace.id, {
+      category: searchParams.category,
+      search: searchParams.search,
+      sort: (searchParams.sort as "newest" | "top") || "newest",
+    }),
+    checkUserRole(workspace.id),
+  ]);
+
+  const isOwner = role === "owner";
 
   if (items.length === 0) {
     return (
@@ -64,7 +69,7 @@ async function FeedContent({
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <FeedItemCard key={item.id} item={item} slug={slug} />
+        <FeedItemCard key={item.id} item={item} slug={slug} isOwner={isOwner} />
       ))}
     </div>
   );
