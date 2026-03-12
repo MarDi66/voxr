@@ -20,7 +20,6 @@ export const updateWorkspaceSchema = z.object({
 
 export const createInviteSchema = z.object({
   workspaceId: z.string().uuid(),
-  invitedEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
 });
 
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;

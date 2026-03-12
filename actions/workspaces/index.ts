@@ -104,11 +104,6 @@ export async function consumeInvite(input: { inviteToken: string }) {
     return { error: "This invite has expired" };
   }
 
-  // Check email restriction
-  if (invite.invited_email && invite.invited_email !== user.email) {
-    return { error: "This invite was sent to a different email address" };
-  }
-
   // Check if already a member
   const { data: existingMember } = await supabase
     .from("workspace_members")
@@ -159,7 +154,6 @@ export async function consumeInvite(input: { inviteToken: string }) {
 
 export async function createInvite(input: {
   workspaceId: string;
-  invitedEmail?: string;
 }) {
   const parsed = createInviteSchema.safeParse(input);
   if (!parsed.success) {
@@ -182,7 +176,6 @@ export async function createInvite(input: {
   const { error } = await supabase.from("workspace_invites").insert({
     workspace_id: parsed.data.workspaceId,
     token_hash: tokenHash,
-    invited_email: parsed.data.invitedEmail || null,
     role: "member",
     created_by: user.id,
     expires_at: new Date(

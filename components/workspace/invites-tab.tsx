@@ -21,7 +21,6 @@ import { createClient } from "@/lib/supabase/client";
 
 type Invite = {
   id: string;
-  invited_email: string | null;
   role: string;
   status: string;
   created_at: string;
@@ -42,7 +41,7 @@ export function InvitesTab({
     const supabase = createClient();
     const { data } = await supabase
       .from("workspace_invites")
-      .select("id, invited_email, role, status, created_at, expires_at, used_at")
+      .select("id, role, status, created_at, expires_at, used_at")
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false });
 
@@ -79,7 +78,7 @@ export function InvitesTab({
     const supabase = createClient();
     supabase
       .from("workspace_invites")
-      .select("id, invited_email, role, status, created_at, expires_at, used_at")
+      .select("id, role, status, created_at, expires_at, used_at")
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false })
       .then(async ({ data }) => {
@@ -163,7 +162,6 @@ export function InvitesTab({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
@@ -173,9 +171,6 @@ export function InvitesTab({
             <TableBody>
               {invites.map((invite) => (
                 <TableRow key={invite.id}>
-                  <TableCell>
-                    {invite.invited_email || "Any"}
-                  </TableCell>
                   <TableCell>
                     <Badge variant="outline">{invite.role}</Badge>
                   </TableCell>
@@ -196,11 +191,13 @@ export function InvitesTab({
                   <TableCell>
                     {!invite.used_at && (
                       <Button
-                        variant="ghost"
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleRevoke(invite.id)}
+                        className="ml-auto flex"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Revoke
                       </Button>
                     )}
                   </TableCell>
