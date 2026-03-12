@@ -52,10 +52,10 @@ export function FeedFilters({ slug }: { slug: string }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="idea">Idea</SelectItem>
-            <SelectItem value="concern">Concern</SelectItem>
-            <SelectItem value="praise">Praise</SelectItem>
-            <SelectItem value="question">Question</SelectItem>
+            <SelectItem value="idea">💡 Idea</SelectItem>
+            <SelectItem value="concern">⚠️ Concern</SelectItem>
+            <SelectItem value="praise">🎉 Praise</SelectItem>
+            <SelectItem value="question">❓ Question</SelectItem>
           </SelectContent>
         </Select>
 

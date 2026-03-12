@@ -10,10 +10,17 @@ import { CommentSection } from "@/components/feedback/comment-section";
 import { ItemActions } from "@/components/feedback/item-actions";
 
 const categoryColors: Record<string, string> = {
-  idea: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  concern: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-  praise: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  question: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  idea: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+  concern: "bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300",
+  praise: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
+  question: "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
+};
+
+const categoryEmojis: Record<string, string> = {
+  idea: "💡",
+  concern: "⚠️",
+  praise: "🎉",
+  question: "❓",
 };
 
 export default async function ItemDetailPage({
@@ -47,7 +54,7 @@ export default async function ItemDetailPage({
                   variant="secondary"
                   className={categoryColors[item.category] || ""}
                 >
-                  {item.category}
+                  {categoryEmojis[item.category]} {item.category}
                 </Badge>
                 {item.status === "hidden" && (
                   <Badge variant="destructive">Hidden</Badge>
