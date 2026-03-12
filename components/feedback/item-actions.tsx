@@ -71,10 +71,10 @@ export function ItemActions({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>
+        <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-fit">
           {isAdmin && (
             <DropdownMenuItem onClick={handleToggleFlag}>
               {isFlagged ? (

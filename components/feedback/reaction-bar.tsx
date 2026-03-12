@@ -47,7 +47,7 @@ export function ReactionBar({
             <TooltipTrigger
               render={
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   className={`gap-1 text-sm ${isActive ? "border-primary bg-primary/10" : ""}`}
                   onClick={() => handleToggle(emoji)}
