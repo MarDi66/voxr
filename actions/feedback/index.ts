@@ -1,0 +1,125 @@
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+import { createItemSchema, updateItemSchema } from "@/lib/validators/feedback";
+
+export async function createItem(input: {
+  workspaceId: string;
+  title: string;
+  body: string;
+  category: string;
+}) {
+  const parsed = createItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  // author_id is set by the trigger — pass a placeholder that will be overwritten
+  const { data, error } = await supabase
+    .from("feedback_items")
+    .insert({
+      workspace_id: parsed.data.workspaceId,
+      title: parsed.data.title,
+      body: parsed.data.body,
+      category: parsed.data.category,
+      author_id: user.id, // will be overwritten by trigger
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true, itemId: data.id };
+}
+
+export async function updateItem(input: {
+  itemId: string;
+  title?: string;
+  body?: string;
+  category?: string;
+}) {
+  const parsed = updateItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const updateData: Record<string, string> = {};
+  if (parsed.data.title) updateData.title = parsed.data.title;
+  if (parsed.data.body) updateData.body = parsed.data.body;
+  if (parsed.data.category) updateData.category = parsed.data.category;
+
+  const { error } = await supabase
+    .from("feedback_items")
+    .update(updateData)
+    .eq("id", parsed.data.itemId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function deleteItem(itemId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase
+    .from("feedback_items")
+    .delete()
+    .eq("id", itemId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function setItemStatus(itemId: string, status: "published" | "hidden") {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase
+    .from("feedback_items")
+    .update({ status })
+    .eq("id", itemId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
