@@ -70,37 +70,39 @@ export function ItemActions({
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
-          <MoreHorizontal className="h-4 w-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-fit">
-          {isAdmin && (
-            <DropdownMenuItem onClick={handleToggleFlag}>
-              {isFlagged ? (
-                <>
-                  <PinOff className="mr-2 h-4 w-4" />
-                  Unpin
-                </>
-              ) : (
-                <>
-                  <Pin className="mr-2 h-4 w-4" />
-                  Pin to top
-                </>
-              )}
-            </DropdownMenuItem>
-          )}
-          {isAdmin && !isOwn && (
-            <DropdownMenuSeparator />
-          )}
-          {!isOwn && (
-            <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
-              <Flag className="mr-2 h-4 w-4" />
-              Report
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {isAdmin || !isOwn ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+            <MoreHorizontal className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-fit">
+            {isAdmin && (
+              <DropdownMenuItem onClick={handleToggleFlag}>
+                {isFlagged ? (
+                  <>
+                    <PinOff className="mr-2 h-4 w-4" />
+                    Unpin
+                  </>
+                ) : (
+                  <>
+                    <Pin className="mr-2 h-4 w-4" />
+                    Pin to top
+                  </>
+                )}
+              </DropdownMenuItem>
+            )}
+            {isAdmin && !isOwn && (
+              <DropdownMenuSeparator />
+            )}
+            {!isOwn && (
+              <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+                <Flag className="mr-2 h-4 w-4" />
+                Report
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
 
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <DialogContent>

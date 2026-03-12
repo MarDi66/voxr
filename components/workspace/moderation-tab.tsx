@@ -169,7 +169,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                   <div className="flex gap-1">
                     {report.target_type === "item" && (
                       <AlertDialog>
-                        <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
+                        <AlertDialogTrigger render={<Button variant="ghost" size="sm" className="bg-amber-500/10" />}>
                           <EyeOff className="mr-1 h-4 w-4" />
                           Hide Content
                         </AlertDialogTrigger>
@@ -198,6 +198,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                       variant="ghost"
                       size="sm"
                       onClick={() => handleResolve(report.id, "dismissed")}
+                      className="bg-destructive/10"
                     >
                       <X className="mr-1 h-4 w-4" />
                       Dismiss
@@ -330,12 +331,13 @@ function ReportPreview({ report, slug }: { report: Report; slug: string }) {
       <div className="flex items-center gap-2">
         <Drawer>
           <DrawerTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Eye className="h-4 w-4" />
+            <Button variant="secondary" size="sm">
+              <Eye className="h-4 w-4 mr-1" />
+              Preview
             </Button>
           </DrawerTrigger>
-          <DrawerContent>
-            <div className="mx-auto w-full max-w-lg">
+          <DrawerContent className="max-w-4xl mx-auto">
+            <div className="mx-auto w-full">
               <DrawerHeader>
                 <DrawerTitle>
                   {itemPreview ? itemPreview.title : "Reported Comment"}
@@ -364,7 +366,8 @@ function ReportPreview({ report, slug }: { report: Report; slug: string }) {
               </div>
               <DrawerFooter>
                 {itemId && (
-                  <Link href={`/w/${slug}/i/${itemId}`} className={buttonVariants({ variant: "ghost", size: "icon" })}>
+                  <Link href={`/w/${slug}/i/${itemId}`} className={buttonVariants({ variant: "secondary", })}>
+                    Go to Feedback
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                 )}
@@ -377,8 +380,9 @@ function ReportPreview({ report, slug }: { report: Report; slug: string }) {
         </Drawer>
 
         {itemId && (
-          <Link href={`/w/${slug}/i/${itemId}`} className={buttonVariants({ variant: "ghost", size: "icon" })}>
-            <ExternalLink className="h-4 w-4" />
+          <Link href={`/w/${slug}/i/${itemId}`} className={buttonVariants({ variant: "secondary", size: "sm", })}>
+            <ExternalLink className="h-4 w-4 mr-1" />
+            Go to Feedback
           </Link>
         )}
       </div>
