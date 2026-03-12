@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Eye, EyeOff, ExternalLink, X } from "lucide-react";
+import { Eye, EyeOff, ExternalLink, TriangleAlertIcon, CheckIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -233,9 +233,9 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                       variant="ghost"
                       size="sm"
                       onClick={() => handleResolve(report.id, "dismissed")}
-                      className="bg-destructive/10"
+                      className="bg-green-500/10 dark:bg-green-500/10"
                     >
-                      <X className="mr-1 h-4 w-4" />
+                      <CheckIcon className="mr-1 h-4 w-4" />
                       Dismiss
                     </Button>
                   </div>
@@ -276,6 +276,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
               <HiddenItemCard
                 key={item.id}
                 item={item}
+                slug={slug}
                 onUnhide={() => handleUnhideItem(item.id)}
               />
             ))}
@@ -304,16 +305,18 @@ function getItemIdForReport(report: Report): string {
 
 function HiddenItemCard({
   item,
+  slug,
   onUnhide,
 }: {
   item: HiddenItem;
+  slug: string;
   onUnhide: () => void;
 }) {
   const [revealed, setRevealed] = useState(false);
 
   return (
     <Card>
-      <CardContent className="py-3 space-y-2">
+      <CardContent className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="outline">feedback</Badge>
@@ -331,12 +334,20 @@ function HiddenItemCard({
                 <><Eye className="mr-1 h-4 w-4" />Reveal</>
               )}
             </Button>
+            <Link
+              href={`/w/${slug}/i/${item.id}`}
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
+              <ExternalLink className="mr-1 h-4 w-4" />
+              Go to Feedback
+            </Link>
             <Button
               variant="outline"
               size="sm"
               onClick={onUnhide}
+              className="bg-amber-500/15 dark:bg-amber-500/15"
             >
-              <Eye className="mr-1 h-4 w-4" />
+              <TriangleAlertIcon className="mr-1 h-4 w-4" />
               Unhide
             </Button>
           </div>
@@ -361,7 +372,7 @@ function HiddenCommentCard({
 
   return (
     <Card>
-      <CardContent className="py-3 space-y-2">
+      <CardContent className="space-y-2">
         <div className="flex items-center justify-between">
           <Badge variant="outline">comment</Badge>
           <div className="flex items-center gap-1">
@@ -387,8 +398,9 @@ function HiddenCommentCard({
               variant="outline"
               size="sm"
               onClick={onUnhide}
+              className="bg-amber-500/15 dark:bg-amber-500/15"
             >
-              <Eye className="mr-1 h-4 w-4" />
+              <TriangleAlertIcon className="mr-1 h-4 w-4" />
               Unhide
             </Button>
           </div>

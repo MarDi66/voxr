@@ -92,10 +92,10 @@ export async function setItemStatus(itemId: string, status: "published" | "hidde
     return { error: "Not authenticated" };
   }
 
-  const { error } = await supabase
-    .from("feedback_items")
-    .update({ status })
-    .eq("id", itemId);
+  const { error } = await supabase.rpc("set_item_status", {
+    p_item_id: itemId,
+    p_status: status,
+  });
 
   if (error) {
     return { error: error.message };
@@ -114,10 +114,10 @@ export async function setCommentStatus(commentId: string, status: "published" | 
     return { error: "Not authenticated" };
   }
 
-  const { error } = await supabase
-    .from("comments")
-    .update({ status })
-    .eq("id", commentId);
+  const { error } = await supabase.rpc("set_comment_status", {
+    p_comment_id: commentId,
+    p_status: status,
+  });
 
   if (error) {
     return { error: error.message };
