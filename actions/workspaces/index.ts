@@ -173,21 +173,22 @@ export async function createInvite(input: {
   const token = crypto.randomBytes(32).toString("hex");
   const tokenHash = hashToken(token);
 
-  const { error } = await supabase.from("workspace_invites").insert({
+  const { data: inserted, error } = await supabase.from("workspace_invites").insert({
     workspace_id: parsed.data.workspaceId,
     token_hash: tokenHash,
+    token,
     role: "member",
     created_by: user.id,
     expires_at: new Date(
       Date.now() + 7 * 24 * 60 * 60 * 1000
     ).toISOString(), // 7 days
-  });
+  }).select("id").single();
 
   if (error) {
     return { error: error.message };
   }
 
-  return { success: true, token };
+  return { success: true, token, inviteId: inserted.id };
 }
 
 export async function revokeInvite(inviteId: string) {

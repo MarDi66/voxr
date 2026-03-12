@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Copy, Loader2, Trash2 } from "lucide-react";
+import { Copy, CopyIcon, Loader2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type Invite = {
   id: string;
+  token: string | null;
   role: string;
   status: string;
   created_at: string;
@@ -41,7 +42,7 @@ export function InvitesTab({
     const supabase = createClient();
     const { data } = await supabase
       .from("workspace_invites")
-      .select("id, role, status, created_at, expires_at, used_at")
+      .select("id, token, role, status, created_at, expires_at, used_at")
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false });
 
@@ -78,7 +79,7 @@ export function InvitesTab({
     const supabase = createClient();
     supabase
       .from("workspace_invites")
-      .select("id, role, status, created_at, expires_at, used_at")
+      .select("id, token, role, status, created_at, expires_at, used_at")
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false })
       .then(async ({ data }) => {
@@ -165,6 +166,7 @@ export function InvitesTab({
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead>Expires</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -188,18 +190,36 @@ export function InvitesTab({
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(invite.created_at).toLocaleDateString()}
                   </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {invite.expires_at
+                      ? new Date(invite.expires_at).toLocaleDateString()
+                      : "—"}
+                  </TableCell>
                   <TableCell>
-                    {!invite.used_at && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleRevoke(invite.id)}
-                        className="ml-auto flex"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Revoke
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2 justify-end">
+                      {invite.token && invite.status === "active" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            const url = `${window.location.origin}/onboarding?token=${invite.token}`;
+                            await navigator.clipboard.writeText(url);
+                            toast.success("Invite link copied to clipboard!");
+                          }}
+                        >
+                          <CopyIcon />
+                        </Button>
+                      )}
+                      {!invite.used_at && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleRevoke(invite.id)}
+                        >
+                          <Trash2 />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

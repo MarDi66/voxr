@@ -155,9 +155,8 @@ export function MembersTab({
                         {!isCurrentUser && !isMemberOwner && (
                           <div className="flex gap-1">
                             <AlertDialog>
-                              <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
-                                  <ArrowRightLeft className="mr-1 h-4 w-4" />
-                                  Transfer
+                              <AlertDialogTrigger render={<Button variant="outline" size="sm" className="ml-auto" />}>
+                                  <ArrowRightLeft />
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -185,8 +184,8 @@ export function MembersTab({
                             </AlertDialog>
 
                             <AlertDialog>
-                              <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
-                                  <UserMinus className="h-4 w-4" />
+                              <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
+                                  <UserMinus />
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
