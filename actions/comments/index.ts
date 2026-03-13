@@ -22,6 +22,16 @@ export async function createComment(input: {
     return { error: "Not authenticated" };
   }
 
+  const { data: item } = await supabase
+    .from("feedback_items")
+    .select("status")
+    .eq("id", parsed.data.itemId)
+    .single();
+
+  if (!item || item.status === "hidden") {
+    return { error: "Cannot comment on a hidden item" };
+  }
+
   const { error } = await supabase.from("comments").insert({
     workspace_id: parsed.data.workspaceId,
     item_id: parsed.data.itemId,

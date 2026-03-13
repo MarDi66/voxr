@@ -148,10 +148,12 @@ export function CommentSection({
   workspaceId,
   itemId,
   comments,
+  isItemHidden = false,
 }: {
   workspaceId: string;
   itemId: string;
   comments: Comment[];
+  isItemHidden?: boolean;
 }) {
   const router = useRouter();
   const form = useForm<CreateCommentInput>({
@@ -190,7 +192,7 @@ export function CommentSection({
         </ScrollArea>
       )}
 
-      <Card>
+      {!isItemHidden && <Card>
         <CardContent className="pt-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -223,7 +225,7 @@ export function CommentSection({
             </form>
           </Form>
         </CardContent>
-      </Card>
+      </Card>}
     </div>
   );
 }

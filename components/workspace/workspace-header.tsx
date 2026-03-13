@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { LogOut, Plus, Settings, ChevronDown } from "lucide-react";
+import { BarChart3, LogOut, Plus, Settings, ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -77,6 +77,12 @@ export function WorkspaceHeader({
             <Button size="sm">
               <Plus className="mr-1 h-4 w-4" />
               New Feedback
+            </Button>
+          </Link>
+
+          <Link href={`/w/${workspace.slug}/analytics`}>
+            <Button variant="ghost" size="sm">
+              <BarChart3 className="h-4 w-4" />
             </Button>
           </Link>
 

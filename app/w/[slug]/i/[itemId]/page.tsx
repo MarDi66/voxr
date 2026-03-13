@@ -107,6 +107,7 @@ export default async function ItemDetailPage({
         workspaceId={workspace.id}
         itemId={item.id}
         comments={item.comments}
+        isItemHidden={isHidden}
       />
     </div>
   );
