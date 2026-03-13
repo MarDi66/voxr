@@ -102,10 +102,10 @@ export async function getFeed(
     rest.sort((a, b) => {
       const totalA =
         a.commentCount +
-        Object.values(a.reactionCounts).reduce((s, n) => s + n, 0);
+        (Object.values(a.reactionCounts) as number[]).reduce((s, n) => s + n, 0);
       const totalB =
         b.commentCount +
-        Object.values(b.reactionCounts).reduce((s, n) => s + n, 0);
+        (Object.values(b.reactionCounts) as number[]).reduce((s, n) => s + n, 0);
       return totalB - totalA;
     });
     return [...flagged, ...rest];
@@ -415,3 +415,4 @@ export async function getWorkspaceAnalytics(workspaceId: string) {
     topEmojis,
   };
 }
+
