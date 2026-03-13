@@ -65,7 +65,7 @@ export function WorkspaceHeader({
                 ))}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/onboarding")}>
+              <DropdownMenuItem onClick={() => router.push("/onboarding?manager=true")}>
                 Create or join workspace
               </DropdownMenuItem>
             </DropdownMenuContent>

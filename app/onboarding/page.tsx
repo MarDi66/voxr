@@ -5,7 +5,7 @@ import { OnboardingTabs } from "@/components/workspace/onboarding-tabs";
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string }>;
+  searchParams: Promise<{ token?: string; manager?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -30,6 +30,11 @@ export default async function OnboardingPage({
     memberships && memberships.length > 0
       ? (memberships[0].workspaces as unknown as { slug: string }).slug
       : undefined;
+
+  // If user already has a workspace and there's no invite token and their not coming from the workspace manager CTA, go straight to the workspace
+  if (existingWorkspaceSlug && !resolvedParams.token && !resolvedParams.manager) {
+    redirect(`/w/${existingWorkspaceSlug}`);
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
