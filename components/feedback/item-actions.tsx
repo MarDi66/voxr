@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -32,12 +31,18 @@ export function ItemActions({
   isOwn,
   isAdmin,
   isFlagged = false,
+  isHidden = false,
+  reportCount = 0,
+  hasReported = false,
 }: {
   itemId: string;
   workspaceId: string;
   isOwn: boolean;
   isAdmin: boolean;
   isFlagged?: boolean;
+  isHidden?: boolean;
+  reportCount?: number;
+  hasReported?: boolean;
 }) {
   const router = useRouter();
   const [reportReason, setReportReason] = useState("");
@@ -56,6 +61,7 @@ export function ItemActions({
     }
     toast.success("Report submitted");
     setReportReason("");
+    router.refresh();
   }
 
   async function handleToggleFlag() {
@@ -69,60 +75,70 @@ export function ItemActions({
   }
 
   return (
-    <>
-      {isAdmin || !isOwn ? (
+    <div className="flex items-center gap-1">
+      {reportCount > 0 && (
+        <span className="flex items-center gap-0.5 text-xs text-destructive">
+          <Flag className="h-3.5 w-3.5" />
+          {reportCount}
+        </span>
+      )}
+      {!isOwn && !isHidden && (
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 gap-1 px-2 ${hasReported || reportCount > 0 ? "text-destructive cursor-not-allowed" : "text-muted-foreground hover:text-destructive"}`}
+            onClick={() => !hasReported && setShowReportDialog(true)}
+            disabled={hasReported}
+            title={hasReported ? "Already reported" : "Report feedback"}
+          >
+            <Flag className="h-3.5 w-3.5" />
+          </Button>
+
+          <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Report this content</DialogTitle>
+                <DialogDescription>
+                  Help us understand why this content should be reviewed.
+                </DialogDescription>
+              </DialogHeader>
+              <Textarea
+                placeholder="Reason for reporting (optional)"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+              />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowReportDialog(false)}>Cancel</Button>
+                <Button onClick={() => { handleReport(); setShowReportDialog(false); }}>Submit Report</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
+
+      {isAdmin && (
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
             <MoreHorizontal className="h-4 w-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-fit">
-            {isAdmin && (
-              <DropdownMenuItem onClick={handleToggleFlag}>
-                {isFlagged ? (
-                  <>
-                    <PinOff className="mr-2 h-4 w-4" />
-                    Unpin
-                  </>
-                ) : (
-                  <>
-                    <Pin className="mr-2 h-4 w-4" />
-                    Pin to top
-                  </>
-                )}
-              </DropdownMenuItem>
-            )}
-            {isAdmin && !isOwn && (
-              <DropdownMenuSeparator />
-            )}
-            {!isOwn && (
-              <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
-                <Flag className="mr-2 h-4 w-4" />
-                Report
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem onClick={handleToggleFlag}>
+              {isFlagged ? (
+                <>
+                  <PinOff className="mr-2 h-4 w-4" />
+                  Unpin
+                </>
+              ) : (
+                <>
+                  <Pin className="mr-2 h-4 w-4" />
+                  Pin to top
+                </>
+              )}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      ) : null}
-
-      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Report this content</DialogTitle>
-            <DialogDescription>
-              Help us understand why this content should be reviewed.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            placeholder="Reason for reporting (optional)"
-            value={reportReason}
-            onChange={(e) => setReportReason(e.target.value)}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowReportDialog(false)}>Cancel</Button>
-            <Button onClick={() => { handleReport(); setShowReportDialog(false); }}>Submit Report</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      )}
+    </div>
   );
 }

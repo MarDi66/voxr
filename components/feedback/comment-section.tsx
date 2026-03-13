@@ -45,6 +45,8 @@ type Comment = {
   is_item_author: boolean;
   reactionCounts: Record<string, number>;
   userReactions: string[];
+  reportCount: number;
+  hasReported: boolean;
 };
 
 function CommentItem({
@@ -84,17 +86,26 @@ function CommentItem({
         <p className={`text-sm ${isHidden ? "select-none blur-sm pl-3 pb-2" : ""}`}>
           {isHidden ? "This comment has been hidden by a moderator." : comment.body}
         </p>
-        {!comment.is_own && !isHidden && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-            onClick={() => setShowReportDialog(true)}
-            title="Report comment"
-          >
-            <Flag className="h-3.5 w-3.5" />
-          </Button>
-        )}
+        <div className="flex items-center shrink-0">
+          {!comment.is_own && !isHidden && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-7 shrink-0 ${comment.hasReported ? "text-destructive cursor-not-allowed" : "text-muted-foreground hover:text-destructive"}`}
+              onClick={() => !comment.hasReported && setShowReportDialog(true)}
+              disabled={comment.hasReported}
+              title={comment.hasReported ? "Already reported" : "Report comment"}
+            >
+              <Flag className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          {comment.reportCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-destructive shrink-0">
+              {(comment.is_own || isHidden) && <Flag className="h-3 w-3" />}
+              {comment.reportCount}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span>{new Date(comment.created_at).toLocaleString()}</span>

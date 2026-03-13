@@ -82,6 +82,9 @@ export default async function ItemDetailPage({
               isOwn={item.is_own}
               isAdmin={isAdmin}
               isFlagged={item.is_flagged}
+              isHidden={isHidden}
+              reportCount={item.reportCount}
+              hasReported={item.hasReported}
             />
           </div>
         </CardHeader>

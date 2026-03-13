@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, Pin } from "lucide-react";
+import { MessageSquare, Pin, Flag } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ type FeedItem = {
   is_flagged: boolean;
   commentCount: number;
   reactionCounts: Record<string, number>;
+  reportCount: number;
 };
 
 const categoryColors: Record<string, string> = {
@@ -107,6 +108,12 @@ export function FeedItemCard({
                       {emoji} {count}
                     </span>
                   ))}
+              </span>
+            )}
+            {item.reportCount > 0 && (
+              <span className="flex items-center gap-1 text-destructive">
+                <Flag className="h-3 w-3" />
+                {item.reportCount}
               </span>
             )}
             {item.is_own && (

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingTabs } from "@/components/workspace/onboarding-tabs";
+import VoxrLogo from "@/components/common/logo";
 
 export default async function OnboardingPage({
   searchParams,
@@ -40,7 +41,14 @@ export default async function OnboardingPage({
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold">Welcome to Voxr</h1>
+          {existingWorkspaceSlug ? (
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl flex justify-center gap-4">
+              <VoxrLogo className="w-18" />
+              Voxr
+            </h1>
+          ) : (
+            <h1 className="text-3xl font-bold">Welcome to Voxr</h1>
+          )}
           <p className="mt-2 text-muted-foreground">
             Create a new workspace or join an existing one
           </p>

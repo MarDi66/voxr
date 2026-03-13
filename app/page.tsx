@@ -2,13 +2,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageSquare, Shield, Users } from "lucide-react";
+import VoxrLogo from "@/components/common/logo";
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <main className="flex max-w-3xl flex-col items-center gap-12 py-24 text-center">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl flex gap-4">
+            <VoxrLogo className="w-18" />
             Voxr
           </h1>
           <p className="max-w-md text-lg text-muted-foreground">

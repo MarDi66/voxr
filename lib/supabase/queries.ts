@@ -89,10 +89,21 @@ export async function getFeed(
       (reactionCountMap[r.target_id][r.emoji] || 0) + 1;
   });
 
+  // Get report counts for each item
+  const { data: reportsSummary } = await supabase.rpc("get_reports_summary", {
+    target_ids: itemIds,
+  });
+
+  const reportCountMap: Record<string, number> = {};
+  reportsSummary?.forEach((r: { target_id: string; report_count: number }) => {
+    reportCountMap[r.target_id] = r.report_count;
+  });
+
   const enriched = items.map((item) => ({
     ...item,
     commentCount: commentCountMap[item.id] || 0,
     reactionCounts: reactionCountMap[item.id] || {},
+    reportCount: reportCountMap[item.id] || 0,
   }));
 
   if (options?.sort === "top") {
@@ -177,13 +188,31 @@ export async function getItemDetail(itemId: string) {
     }
   });
 
+  // Get report info for the item and its comments
+  const allTargetIds = [itemId, ...commentIds];
+  const { data: reportsSummary } = await supabase.rpc("get_reports_summary", {
+    target_ids: allTargetIds,
+  });
+
+  const reportsMap: Record<string, { reportCount: number; hasReported: boolean }> = {};
+  reportsSummary?.forEach((r: { target_id: string; report_count: number; has_reported: boolean }) => {
+    reportsMap[r.target_id] = {
+      reportCount: r.report_count,
+      hasReported: r.has_reported,
+    };
+  });
+
   return {
     ...item,
+    reportCount: reportsMap[itemId]?.reportCount || 0,
+    hasReported: reportsMap[itemId]?.hasReported || false,
     comments:
       comments?.map((c) => ({
         ...c,
         reactionCounts: commentReactionMap[c.id]?.counts || {},
         userReactions: commentReactionMap[c.id]?.userEmojis || [],
+        reportCount: reportsMap[c.id]?.reportCount || 0,
+        hasReported: reportsMap[c.id]?.hasReported || false,
       })) || [],
     reactionCounts,
     userReactions,

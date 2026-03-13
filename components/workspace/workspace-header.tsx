@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
+import VoxrLogo from "../common/logo";
 
 type Workspace = {
   id: string;
@@ -45,7 +46,8 @@ export function WorkspaceHeader({
     <header className="border-b">
       <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
         <div className="flex items-center gap-4">
-          <Link href={`/w/${workspace.slug}`} className="text-lg font-bold">
+          <Link href={`/w/${workspace.slug}`} className="text-lg font-bold flex gap-2">
+            <VoxrLogo className="w-8" />
             Voxr
           </Link>
 

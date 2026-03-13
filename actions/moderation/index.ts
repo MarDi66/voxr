@@ -32,6 +32,9 @@ export async function reportTarget(input: {
   });
 
   if (error) {
+    if (error.code === "23505") {
+      return { error: "You have already reported this content" };
+    }
     return { error: error.message };
   }
 
