@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, LogOut } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import { CreateWorkspaceForm } from "./create-workspace-form";
 import { JoinWorkspaceForm } from "./join-workspace-form";
 
@@ -14,6 +16,14 @@ export function OnboardingTabs({
   defaultToken?: string;
   existingWorkspaceSlug?: string;
 }) {
+  const router = useRouter();
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth");
+  }
+
   return (
     <div className="space-y-4">
       <Tabs defaultValue={defaultToken ? "join" : "create"}>
@@ -39,6 +49,14 @@ export function OnboardingTabs({
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </Link>
+        </div>
+      )}
+      {!existingWorkspaceSlug && (
+        <div className="text-center">
+          <Button variant="ghost" onClick={handleSignOut} className="w-full">
+            <LogOut className="mr-2 h-4 w-4" />
+            Log out
+          </Button>
         </div>
       )}
     </div>

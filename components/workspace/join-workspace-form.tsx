@@ -55,7 +55,24 @@ export function JoinWorkspaceForm({ defaultToken }: { defaultToken?: string }) {
                 <FormItem>
                   <FormLabel>Invite Token</FormLabel>
                   <FormControl>
-                    <Input placeholder="Paste your invite token" {...field} />
+                    <Input
+                      placeholder="Paste your invite token or link"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        try {
+                          const url = new URL(value);
+                          const token = url.searchParams.get("token");
+                          if (token) {
+                            field.onChange(token);
+                            return;
+                          }
+                        } catch {
+                          // Not a URL, use value as-is
+                        }
+                        field.onChange(value);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
