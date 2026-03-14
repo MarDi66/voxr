@@ -65,7 +65,6 @@ export async function getFeed(
     .from("comments")
     .select("item_id")
     .eq("workspace_id", workspaceId)
-    .eq("status", "published")
     .in("item_id", itemIds);
 
   const { data: reactions } = await supabase
