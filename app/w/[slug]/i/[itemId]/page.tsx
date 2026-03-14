@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Pin } from "lucide-react";
 import { getItemDetail, getWorkspaceBySlug, checkUserRole } from "@/lib/supabase/queries";
+import { generateAnonymousIdentities } from "@/lib/anonymous-identity";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +46,19 @@ export default async function ItemDetailPage({
   const role = await checkUserRole(workspace.id);
   const isAdmin = role === "owner";
   const isHidden = item.status === "hidden";
+
+  // Generate anonymous identities for the item author and all commenters
+  const allHashes = [
+    item.author_context_hash,
+    ...item.comments.map((c: { author_context_hash: string }) => c.author_context_hash),
+  ];
+  const identities = generateAnonymousIdentities(allHashes);
+  const itemIdentity = identities.get(item.author_context_hash)!;
+  const enrichedComments = item.comments.map((c: { author_context_hash: string }) => ({
+    ...c,
+    anonymousName: identities.get(c.author_context_hash)!.name,
+    anonymousAvatarUrl: identities.get(c.author_context_hash)!.avatarUrl,
+  }));
 
   return (
     <div className="space-y-6">
@@ -92,8 +106,19 @@ export default async function ItemDetailPage({
           <p className={cn("whitespace-pre-wrap text-sm leading-relaxed", isHidden && "select-none blur-sm")}>
             {isHidden ? "This content has been hidden by a moderator." : item.body}
           </p>
-          <div className="text-xs text-muted-foreground">
-            {new Date(item.created_at).toLocaleString()}
+          <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={itemIdentity.avatarUrl}
+              alt={itemIdentity.name}
+              className="h-8 w-8 rounded-full shrink-0"
+            />
+            <div>
+              <span className="text-xs font-medium">{itemIdentity.name}</span>
+              <div className="text-xs text-muted-foreground">
+                {new Date(item.created_at).toLocaleString()}
+              </div>
+            </div>
           </div>
           <Separator />
           <ReactionBar
@@ -109,7 +134,7 @@ export default async function ItemDetailPage({
       <CommentSection
         workspaceId={workspace.id}
         itemId={item.id}
-        comments={item.comments}
+        comments={enrichedComments}
         isItemHidden={isHidden}
       />
     </div>

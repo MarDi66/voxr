@@ -47,6 +47,8 @@ type Comment = {
   userReactions: string[];
   reportCount: number;
   hasReported: boolean;
+  anonymousName: string;
+  anonymousAvatarUrl: string;
 };
 
 function CommentItem({
@@ -82,8 +84,29 @@ function CommentItem({
 
   return (
     <div className="space-y-2 py-3">
+      <div className="flex items-center gap-2 mb-1">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={comment.anonymousAvatarUrl}
+          alt={comment.anonymousName}
+          className="h-8 w-8 rounded-full shrink-0"
+        />
+        <div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-medium block">{comment.anonymousName}</span>
+            {comment.is_item_author && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+                Author
+              </Badge>
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {new Date(comment.created_at).toLocaleString()}
+          </span>
+        </div>
+      </div>
       <div className="flex items-start justify-between gap-2">
-        <p className={`text-sm ${isHidden ? "select-none blur-sm pl-3 pb-2" : ""}`}>
+        <p className={`text-sm mt-2 ${isHidden ? "select-none blur-sm pl-3 pb-2" : ""}`}>
           {isHidden ? "This comment has been hidden by a moderator." : comment.body}
         </p>
         <div className="flex items-center shrink-0">
@@ -107,14 +130,7 @@ function CommentItem({
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>{new Date(comment.created_at).toLocaleString()}</span>
-        {comment.is_item_author && (
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
-            Author
-          </Badge>
-        )}
-      </div>
+
       {!isHidden && (
         <ReactionBar
           workspaceId={comment.workspace_id}
