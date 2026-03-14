@@ -76,26 +76,35 @@ export function ItemActions({
 
   return (
     <div className="flex items-center gap-1">
-      {reportCount > 0 && (
-        <span className="flex items-center gap-0.5 text-xs text-destructive">
+      {isHidden ? (
+        <span className="flex items-center gap-1 h-7 px-2 text-destructive text-xs">
           <Flag className="h-3.5 w-3.5" />
           {reportCount}
         </span>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-7 gap-1 px-2 ${reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
+          onClick={() => {
+            if (isOwn) {
+              toast.error("You cannot report your own feedback");
+              return;
+            }
+            if (hasReported) {
+              toast.error("You have already reported this feedback");
+              return;
+            }
+            setShowReportDialog(true);
+          }}
+          title="Report feedback"
+        >
+          <Flag className="h-3.5 w-3.5" />
+          {reportCount > 0 && <span className="text-xs">{reportCount}</span>}
+        </Button>
       )}
-      {!isOwn && !isHidden && (
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`h-7 gap-1 px-2 ${hasReported || reportCount > 0 ? "text-destructive cursor-not-allowed" : "text-muted-foreground hover:text-destructive"}`}
-            onClick={() => !hasReported && setShowReportDialog(true)}
-            disabled={hasReported}
-            title={hasReported ? "Already reported" : "Report feedback"}
-          >
-            <Flag className="h-3.5 w-3.5" />
-          </Button>
 
-          <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Report this content</DialogTitle>
@@ -113,9 +122,7 @@ export function ItemActions({
                 <Button onClick={() => { handleReport(); setShowReportDialog(false); }}>Submit Report</Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
-        </>
-      )}
+      </Dialog>
 
       {isAdmin && (
         <DropdownMenu>

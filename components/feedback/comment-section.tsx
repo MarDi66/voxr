@@ -110,23 +110,32 @@ function CommentItem({
           {isHidden ? "This comment has been hidden by a moderator." : comment.body}
         </p>
         <div className="flex items-center shrink-0">
-          {!comment.is_own && !isHidden && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-7 w-7 shrink-0 ${comment.hasReported ? "text-destructive cursor-not-allowed" : "text-muted-foreground hover:text-destructive"}`}
-              onClick={() => !comment.hasReported && setShowReportDialog(true)}
-              disabled={comment.hasReported}
-              title={comment.hasReported ? "Already reported" : "Report comment"}
-            >
+          {isHidden ? (
+            <span className="flex items-center gap-1 h-7 px-2 text-destructive text-xs">
               <Flag className="h-3.5 w-3.5" />
-            </Button>
-          )}
-          {comment.reportCount > 0 && (
-            <span className="flex items-center gap-0.5 text-xs text-destructive shrink-0">
-              {(comment.is_own || isHidden) && <Flag className="h-3 w-3" />}
               {comment.reportCount}
             </span>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-7 gap-1 px-2 shrink-0 ${comment.reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
+              onClick={() => {
+                if (comment.is_own) {
+                  toast.error("You cannot report your own comment");
+                  return;
+                }
+                if (comment.hasReported) {
+                  toast.error("You have already reported this comment");
+                  return;
+                }
+                setShowReportDialog(true);
+              }}
+              title="Report comment"
+            >
+              <Flag className="h-3.5 w-3.5" />
+              {comment.reportCount > 0 && <span className="text-xs">{comment.reportCount}</span>}
+            </Button>
           )}
         </div>
       </div>
@@ -141,8 +150,7 @@ function CommentItem({
         />
       )}
 
-      {!isHidden && (
-        <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Report this comment</DialogTitle>
@@ -166,7 +174,6 @@ function CommentItem({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      )}
     </div>
   );
 }
