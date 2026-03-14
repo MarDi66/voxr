@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 export function FeedFilters({ slug }: { slug: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateFilter = useCallback(
     (key: string, value: string) => {
@@ -61,15 +63,15 @@ export function FeedFilters({ slug }: { slug: string }) {
 
         <Input
           placeholder="Search..."
-          defaultValue={searchParams.get("search") || ""}
+          value={search}
           className="w-50"
           onChange={(e) => {
-            // Debounce search
             const value = e.target.value;
-            const timeout = setTimeout(() => {
+            setSearch(value);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => {
               updateFilter("search", value);
             }, 300);
-            return () => clearTimeout(timeout);
           }}
         />
       </div>
