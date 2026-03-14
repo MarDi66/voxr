@@ -110,12 +110,7 @@ function CommentItem({
           {isHidden ? "This comment has been hidden by a moderator." : comment.body}
         </p>
         <div className="flex items-center shrink-0">
-          {isHidden ? (
-            <span className="flex items-center gap-1 h-7 px-2 text-destructive text-xs">
-              <Flag className="h-3.5 w-3.5" />
-              {comment.reportCount}
-            </span>
-          ) : (
+          {!isHidden && (
             <Button
               variant="ghost"
               size="sm"

@@ -76,12 +76,7 @@ export function ItemActions({
 
   return (
     <div className="flex items-center gap-1">
-      {isHidden ? (
-        <span className="flex items-center gap-1 h-7 px-2 text-destructive text-xs">
-          <Flag className="h-3.5 w-3.5" />
-          {reportCount}
-        </span>
-      ) : (
+      {!isHidden && (
         <Button
           variant="ghost"
           size="sm"
