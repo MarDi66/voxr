@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { BarChart3, LogOut, Plus, Settings, ChevronDown } from "lucide-react";
+import { BarChart3, LogOut, Plus, Settings, ChevronDown, Building2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -47,13 +47,14 @@ export function WorkspaceHeader({
       <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Link href={`/w/${workspace.slug}`} className="text-lg font-bold flex gap-2">
-            <VoxrLogo className="w-8" />
-            Voxr
+            <VoxrLogo className="w-8 shrink-0" />
+            <span className="hidden sm:inline">Voxr</span>
           </Link>
 
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
-              {workspace.name}
+              <span className="truncate max-w-36 hidden sm:inline">{workspace.name}</span>
+              <Building2 className="h-4 w-4 sm:hidden" />         
               <ChevronDown className="ml-1 h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-fit">
@@ -76,9 +77,9 @@ export function WorkspaceHeader({
 
         <div className="flex items-center gap-2">
           <Link href={`/w/${workspace.slug}/new`}>
-            <Button size="sm">
-              <Plus className="mr-1 h-4 w-4" />
-              New Feedback
+            <Button size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Feedback</span>
             </Button>
           </Link>
 
