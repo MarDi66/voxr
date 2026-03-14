@@ -82,9 +82,6 @@ export default async function ItemDetailPage({
                 {item.status === "hidden" && (
                   <Badge variant="destructive">Hidden</Badge>
                 )}
-                {item.is_own && (
-                  <Badge variant="outline">yours</Badge>
-                )}
               </div>
               <CardTitle className={cn("text-xl", isHidden && "select-none blur-sm")}>
                 {isHidden ? "Hidden content" : item.title}

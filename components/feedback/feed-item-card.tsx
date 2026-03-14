@@ -116,11 +116,6 @@ export function FeedItemCard({
                 {item.reportCount}
               </span>
             )}
-            {item.is_own && (
-              <Badge variant="outline" className="text-xs">
-                yours
-              </Badge>
-            )}
           </div>
         </CardContent>
       </Card>
