@@ -63,6 +63,34 @@ export async function resolveReport(reportId: string, action: "resolved" | "dism
   return { success: true };
 }
 
+export async function resolveReportsByTarget(
+  targetType: "item" | "comment",
+  targetId: string,
+  action: "resolved" | "dismissed",
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase
+    .from("reports")
+    .update({ status: action })
+    .eq("target_type", targetType)
+    .eq("target_id", targetId)
+    .eq("status", "pending");
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
 export async function getReports(workspaceId: string) {
   const supabase = await createClient();
 

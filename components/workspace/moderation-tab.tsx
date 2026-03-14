@@ -31,7 +31,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 
-import { resolveReport, getReports } from "@/actions/moderation";
+import { resolveReport, resolveReportsByTarget, getReports } from "@/actions/moderation";
 import { setItemStatus, setCommentStatus } from "@/actions/feedback";
 import { createClient } from "@/lib/supabase/client";
 
@@ -221,7 +221,17 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                               } else {
                                 await setCommentStatus(report.target_id, "hidden");
                               }
-                              await handleResolve(report.id, "resolved");
+                              const result = await resolveReportsByTarget(
+                                report.target_type as "item" | "comment",
+                                report.target_id,
+                                "resolved",
+                              );
+                              if (result.error) {
+                                toast.error(result.error);
+                                return;
+                              }
+                              toast.success("Report resolved");
+                              fetchData();
                             }}
                           >
                             Hide & Resolve
