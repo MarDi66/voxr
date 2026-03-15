@@ -128,14 +128,16 @@ export function MembersTab({
                 const isMemberOwner = member.role === "owner";
 
                 return (
-                  <TableRow key={member.user_id}>
-                    <TableCell className="flex items-center gap-2">
-                      {member.email}
-                      {isCurrentUser && (
-                        <Badge variant="outline" className="text-xs">
-                          You
-                        </Badge>
-                      )}
+                  <TableRow key={member.user_id} className="h-11">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {member.email}
+                        {isCurrentUser && (
+                          <Badge variant="outline" className="text-xs">
+                            You
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge
