@@ -17,7 +17,7 @@ export default async function AnalyticsPage({
 
   const role = await checkUserRole(workspace.id);
 
-  if (role !== "owner") {
+  if (role !== "owner" && role !== "admin") {
     redirect(`/w/${slug}`);
   }
 

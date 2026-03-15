@@ -44,7 +44,7 @@ export default async function ItemDetailPage({
   }
 
   const role = await checkUserRole(workspace.id);
-  const isAdmin = role === "owner";
+  const isAdmin = role === "owner" || role === "admin";
   const isHidden = item.status === "hidden";
 
   // Generate anonymous identities for the item author and all commenters

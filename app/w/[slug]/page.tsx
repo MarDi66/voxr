@@ -32,7 +32,7 @@ export default async function WorkspaceFeedPage({
     getWorkspaceForms(workspace.id),
   ]);
 
-  const isOwner = role === "owner";
+  const isOwner = role === "owner" || role === "admin";
 
   return (
     <div className="space-y-6">

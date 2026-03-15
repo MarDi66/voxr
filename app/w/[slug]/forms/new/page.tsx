@@ -15,7 +15,7 @@ export default async function NewFormPage({
   }
 
   const role = await checkUserRole(workspace.id);
-  if (role !== "owner") {
+  if (role !== "owner" && role !== "admin") {
     redirect(`/w/${slug}`);
   }
 

@@ -26,8 +26,8 @@ export default async function FormResultsPage({
     redirect(`/w/${slug}`);
   }
 
-  // Private forms: only owner can view results
-  const isOwner = role === "owner";
+  // Private forms: only owner or admin can view results
+  const isOwner = role === "owner" || role === "admin";
   if (formData.visibility === "private" && !isOwner) {
     redirect(`/w/${slug}`);
   }

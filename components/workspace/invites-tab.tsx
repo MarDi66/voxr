@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Copy, CopyIcon, Loader2, Trash2 } from "lucide-react";
+import { CopyIcon, Loader2, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { createInvite, revokeInvite } from "@/actions/workspaces";
 import { createClient } from "@/lib/supabase/client";
@@ -37,6 +53,8 @@ export function InvitesTab({
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   async function fetchInvites() {
     const supabase = createClient();
@@ -117,7 +135,7 @@ export function InvitesTab({
 
   async function handleCreate() {
     setCreating(true);
-    const result = await createInvite({ workspaceId });
+    const result = await createInvite({ workspaceId, role: inviteRole });
     setCreating(false);
 
     if (result.error) {
@@ -128,6 +146,8 @@ export function InvitesTab({
     const inviteUrl = `${window.location.origin}/onboarding?token=${result.token}`;
     await navigator.clipboard.writeText(inviteUrl);
     toast.success("Invite link copied to clipboard!");
+    setDialogOpen(false);
+    setInviteRole("member");
     fetchInvites();
   }
 
@@ -145,14 +165,43 @@ export function InvitesTab({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Invite Links</CardTitle>
-        <Button onClick={handleCreate} disabled={creating} size="sm">
-          {creating ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Copy className="mr-2 h-4 w-4" />
-          )}
-          Create Invite
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setInviteRole("member");
+        }}>
+          <DialogTrigger render={
+            <Button size="sm">
+              <Plus className="mr-1 h-4 w-4" />
+              Create Invite
+            </Button>
+          } />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Invite</DialogTitle>
+              <DialogDescription>
+                Choose the role for the person who will use this invite link.
+              </DialogDescription>
+            </DialogHeader>
+            <Select
+              value={inviteRole}
+              onValueChange={(v) => setInviteRole(v as "admin" | "member")}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+            <DialogFooter>
+              <Button onClick={handleCreate} disabled={creating}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create &amp; Copy Link
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       <CardContent>
         {loading ? (

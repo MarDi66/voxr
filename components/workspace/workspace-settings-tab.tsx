@@ -40,10 +40,13 @@ type Workspace = {
 export function WorkspaceSettingsTab({
   workspace,
   isOwner,
+  isAdmin,
 }: {
   workspace: Workspace;
   isOwner: boolean;
+  isAdmin?: boolean;
 }) {
+  const canEdit = isOwner || isAdmin;
   const router = useRouter();
   const form = useForm<UpdateWorkspaceInput>({
     resolver: zodResolver(updateWorkspaceSchema),
@@ -73,7 +76,7 @@ export function WorkspaceSettingsTab({
     router.push("/onboarding");
   }
 
-  if (!isOwner) {
+  if (!canEdit) {
     return (
       <Card>
         <CardHeader>
@@ -133,6 +136,7 @@ export function WorkspaceSettingsTab({
         </CardContent>
       </Card>
 
+      {isOwner && (
       <Card className="border-destructive">
         <CardHeader>
           <CardTitle className="text-destructive">Danger Zone</CardTitle>
@@ -170,6 +174,7 @@ export function WorkspaceSettingsTab({
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

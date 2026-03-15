@@ -122,13 +122,13 @@ export async function consumeInvite(input: { inviteToken: string }) {
     return { success: true, slug: ws?.slug || "" };
   }
 
-  // Create membership (invites always create 'member' role)
+  // Create membership with the role specified in the invite
   const { error: memberError } = await supabase
     .from("workspace_members")
     .insert({
       workspace_id: invite.workspace_id,
       user_id: user.id,
-      role: "member",
+      role: invite.role,
       status: "active",
     });
 
@@ -152,7 +152,9 @@ export async function consumeInvite(input: { inviteToken: string }) {
   return { success: true, slug: workspace?.slug || "" };
 }
 
-export async function getWorkspaceNameByToken(token: string): Promise<string | null> {
+export async function getInviteInfo(
+  token: string
+): Promise<{ workspaceName: string; role: string } | null> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -162,26 +164,18 @@ export async function getWorkspaceNameByToken(token: string): Promise<string | n
 
   const tokenHash = hashToken(token);
 
-  const { data: invite } = await supabase
-    .from("workspace_invites")
-    .select("workspace_id")
-    .eq("token_hash", tokenHash)
-    .eq("status", "active")
-    .single();
+  const { data } = await supabase.rpc("get_invite_info", {
+    p_token_hash: tokenHash,
+  });
 
-  if (!invite) return null;
+  if (!data?.workspace_name) return null;
 
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("name")
-    .eq("id", invite.workspace_id)
-    .single();
-
-  return workspace?.name ?? null;
+  return { workspaceName: data.workspace_name, role: data.role };
 }
 
 export async function createInvite(input: {
   workspaceId: string;
+  role: "admin" | "member";
 }) {
   const parsed = createInviteSchema.safeParse(input);
   if (!parsed.success) {
@@ -205,7 +199,7 @@ export async function createInvite(input: {
     workspace_id: parsed.data.workspaceId,
     token_hash: tokenHash,
     token,
-    role: "member",
+    role: parsed.data.role,
     created_by: user.id,
     expires_at: new Date(
       Date.now() + 7 * 24 * 60 * 60 * 1000
@@ -345,8 +339,23 @@ export async function removeMember(
     .eq("status", "active")
     .single();
 
-  if (!member || member.role !== "owner") {
-    return { error: "Only the owner can remove members" };
+  if (!member || (member.role !== "owner" && member.role !== "admin")) {
+    return { error: "Only the owner or an admin can remove members" };
+  }
+
+  // Admins cannot remove other admins or the owner
+  if (member.role === "admin") {
+    const { data: target } = await supabase
+      .from("workspace_members")
+      .select("role")
+      .eq("workspace_id", workspaceId)
+      .eq("user_id", targetUserId)
+      .eq("status", "active")
+      .single();
+
+    if (target && (target.role === "owner" || target.role === "admin")) {
+      return { error: "Admins cannot remove other admins or the owner" };
+    }
   }
 
   const { error } = await supabase

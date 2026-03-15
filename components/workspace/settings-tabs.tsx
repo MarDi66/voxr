@@ -20,31 +20,32 @@ export function SettingsTabs({
   role: string;
 }) {
   const isOwner = role === "owner";
+  const isOwnerOrAdmin = role === "owner" || role === "admin";
 
   return (
     <Tabs defaultValue="workspace">
       <TabsList>
         <TabsTrigger value="workspace">Workspace</TabsTrigger>
         <TabsTrigger value="members">Members</TabsTrigger>
-        {isOwner && <TabsTrigger value="invites">Invites</TabsTrigger>}
-        {isOwner && <TabsTrigger value="moderation">Moderation</TabsTrigger>}
+        {isOwnerOrAdmin && <TabsTrigger value="invites">Invites</TabsTrigger>}
+        {isOwnerOrAdmin && <TabsTrigger value="moderation">Moderation</TabsTrigger>}
       </TabsList>
 
       <TabsContent value="workspace" className="mt-4">
-        <WorkspaceSettingsTab workspace={workspace} isOwner={isOwner} />
+        <WorkspaceSettingsTab workspace={workspace} isOwner={isOwner} isAdmin={role === "admin"} />
       </TabsContent>
 
       <TabsContent value="members" className="mt-4">
-        <MembersTab workspaceId={workspace.id} isOwner={isOwner} />
+        <MembersTab workspaceId={workspace.id} role={role} />
       </TabsContent>
 
-      {isOwner && (
+      {isOwnerOrAdmin && (
         <TabsContent value="invites" className="mt-4">
           <InvitesTab workspaceId={workspace.id} />
         </TabsContent>
       )}
 
-      {isOwner && (
+      {isOwnerOrAdmin && (
         <TabsContent value="moderation" className="mt-4">
           <ModerationTab workspaceId={workspace.id} slug={workspace.slug} />
         </TabsContent>

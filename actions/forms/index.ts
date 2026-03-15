@@ -160,8 +160,8 @@ export async function closeForm(formId: string) {
     .eq("status", "active")
     .single();
 
-  if (membership?.role !== "owner") {
-    return { error: "Only the workspace owner can close forms" };
+  if (membership?.role !== "owner" && membership?.role !== "admin") {
+    return { error: "Only the workspace owner or an admin can close forms" };
   }
 
   const { error } = await supabase

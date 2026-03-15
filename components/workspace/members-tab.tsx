@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Crown, UserMinus, ArrowRightLeft } from "lucide-react";
+import { Crown, UserMinus, ArrowRightLeft, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,11 +40,13 @@ type Member = {
 
 export function MembersTab({
   workspaceId,
-  isOwner,
+  role: currentRole,
 }: {
   workspaceId: string;
-  isOwner: boolean;
+  role: string;
 }) {
+  const isOwnerOrAdmin = currentRole === "owner" || currentRole === "admin";
+  const isOwner = currentRole === "owner";
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -119,13 +121,18 @@ export function MembersTab({
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Joined</TableHead>
-                {isOwner && <TableHead></TableHead>}
+                {isOwnerOrAdmin && <TableHead></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {members.map((member) => {
                 const isCurrentUser = member.user_id === currentUserId;
                 const isMemberOwner = member.role === "owner";
+                const isMemberAdmin = member.role === "admin";
+                const canManage =
+                  !isCurrentUser &&
+                  !isMemberOwner &&
+                  (isOwner || (currentRole === "admin" && !isMemberAdmin));
 
                 return (
                   <TableRow key={member.user_id} className="h-11">
@@ -141,10 +148,13 @@ export function MembersTab({
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={isMemberOwner ? "default" : "secondary"}
+                        variant={isMemberOwner ? "default" : isMemberAdmin ? "outline" : "secondary"}
                       >
                         {isMemberOwner && (
                           <Crown className="mr-1 h-3 w-3" />
+                        )}
+                        {isMemberAdmin && (
+                          <Shield className="mr-1 h-3 w-3" />
                         )}
                         {member.role}
                       </Badge>
@@ -152,10 +162,11 @@ export function MembersTab({
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(member.joined_at).toLocaleDateString()}
                     </TableCell>
-                    {isOwner && (
+                    {isOwnerOrAdmin && (
                       <TableCell>
-                        {!isCurrentUser && !isMemberOwner && (
+                        {canManage && (
                           <div className="flex gap-1">
+                            {isOwner && (
                             <AlertDialog>
                               <AlertDialogTrigger render={<Button variant="outline" size="sm" className="ml-auto" />}>
                                   <ArrowRightLeft />
@@ -184,6 +195,7 @@ export function MembersTab({
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
+                            )}
 
                             <AlertDialog>
                               <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>

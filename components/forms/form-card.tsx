@@ -91,7 +91,7 @@ export function FormCard({
               <div className={buttonVariants({ variant: "ghost", size: "sm" })}>
                 Completed
               </div>
-            ) : (
+            ) : !isClosed ? (
               <Link href={`/w/${slug}/forms/${form.id}`}>
                 <Button
                   size="sm"
@@ -100,7 +100,7 @@ export function FormCard({
                   Fill out
                 </Button>
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </CardContent>

@@ -20,6 +20,7 @@ export const updateWorkspaceSchema = z.object({
 
 export const createInviteSchema = z.object({
   workspaceId: z.string().uuid(),
+  role: z.enum(["admin", "member"]),
 });
 
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
