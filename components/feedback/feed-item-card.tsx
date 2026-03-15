@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { MessageSquare, Pin, Flag, Info } from "lucide-react";
 
@@ -75,16 +77,6 @@ export function FeedItemCard({
               <CardTitle className={cn("text-base leading-snug", isHidden && "select-none blur-sm")}>
                 {isHidden ? "Hidden content" : item.title}
               </CardTitle>
-              {isHidden && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger onClick={(e) => e.preventDefault()}>
-                      <Info className="h-4 w-4 text-muted-foreground shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
             </div>
             <div className="flex flex-row-reverse sm:flex-row items-center gap-1">
               {isOwner && !isHidden && (
@@ -94,12 +86,23 @@ export function FeedItemCard({
                   isFlagged={item.is_flagged}
                 />
               )}
-              <Badge
-                variant="secondary"
-                className={categoryColors[item.category] || ""}
-              >
-                {categoryEmojis[item.category]} {item.category}
-              </Badge>
+              {isHidden ? (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger onClick={(e) => e.preventDefault()}>
+                      <Info className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className={categoryColors[item.category] || ""}
+                >
+                  {categoryEmojis[item.category]} {item.category}
+                </Badge>
+              )}
             </div>
           </div>
         </CardHeader>
