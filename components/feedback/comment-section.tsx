@@ -33,6 +33,12 @@ import { createCommentSchema, type CreateCommentInput } from "@/lib/validators/f
 import { createComment } from "@/actions/comments";
 import { reportTarget } from "@/actions/moderation";
 import { ReactionBar } from "./reaction-bar";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 type Comment = {
   id: string;
@@ -111,26 +117,34 @@ function CommentItem({
         </p>
         <div className="flex items-center shrink-0">
           {!isHidden && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-7 gap-1 px-2 shrink-0 ${comment.reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
-              onClick={() => {
-                if (comment.is_own) {
-                  toast.error("You cannot report your own comment");
-                  return;
-                }
-                if (comment.hasReported) {
-                  toast.error("You have already reported this comment");
-                  return;
-                }
-                setShowReportDialog(true);
-              }}
-              title="Report comment"
-            >
-              <Flag className="h-3.5 w-3.5" />
-              {comment.reportCount > 0 && <span className="text-xs">{comment.reportCount}</span>}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`h-7 gap-1 px-2 shrink-0 ${comment.reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
+                      onClick={() => {
+                        if (comment.is_own) {
+                          toast.error("You cannot report your own comment");
+                          return;
+                        }
+                        if (comment.hasReported) {
+                          toast.error("You have already reported this comment");
+                          return;
+                        }
+                        setShowReportDialog(true);
+                      }}
+                    />
+                  }
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  {comment.reportCount > 0 && <span className="text-xs">{comment.reportCount}</span>}
+                </TooltipTrigger>
+                <TooltipContent>Report comment</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </div>

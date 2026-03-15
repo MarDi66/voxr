@@ -24,6 +24,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { toggleFlagItem } from "@/actions/feedback";
 import { reportTarget } from "@/actions/moderation";
 import { useState } from "react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 export function ItemActions({
   itemId,
@@ -77,26 +83,34 @@ export function ItemActions({
   return (
     <div className="flex items-center gap-1">
       {!isHidden && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`h-7 gap-1 px-2 ${reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
-          onClick={() => {
-            if (isOwn) {
-              toast.error("You cannot report your own feedback");
-              return;
-            }
-            if (hasReported) {
-              toast.error("You have already reported this feedback");
-              return;
-            }
-            setShowReportDialog(true);
-          }}
-          title="Report feedback"
-        >
-          <Flag className="h-3.5 w-3.5" />
-          {reportCount > 0 && <span className="text-xs">{reportCount}</span>}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-7 gap-1 px-2 ${reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
+                  onClick={() => {
+                    if (isOwn) {
+                      toast.error("You cannot report your own feedback");
+                      return;
+                    }
+                    if (hasReported) {
+                      toast.error("You have already reported this feedback");
+                      return;
+                    }
+                    setShowReportDialog(true);
+                  }}
+                />
+              }
+            >
+              <Flag className="h-3.5 w-3.5" />
+              {reportCount > 0 && <span className="text-xs">{reportCount}</span>}
+            </TooltipTrigger>
+            <TooltipContent>Report feedback</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
