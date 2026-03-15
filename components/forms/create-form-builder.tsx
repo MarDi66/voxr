@@ -1,9 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +40,7 @@ import { createForm } from "@/actions/forms";
 type QuestionType = "short_text" | "long_text" | "single_choice" | "multiple_choice" | "rating";
 
 type Question = {
+  id: string;
   question_text: string;
   question_type: QuestionType;
   options: string[];
@@ -37,6 +55,156 @@ const questionTypeLabels: Record<QuestionType, string> = {
   rating: "Rating (1-5)",
 };
 
+let nextQuestionId = 1;
+function generateQuestionId() {
+  return `q-${nextQuestionId++}-${Date.now()}`;
+}
+
+function SortableQuestionCard({
+  question,
+  qIndex,
+  questionsCount,
+  updateQuestion,
+  removeQuestion,
+  addOption,
+  updateOption,
+  removeOption,
+}: {
+  question: Question;
+  qIndex: number;
+  questionsCount: number;
+  updateQuestion: (index: number, updates: Partial<Question>) => void;
+  removeQuestion: (index: number) => void;
+  addOption: (qIndex: number) => void;
+  updateOption: (qIndex: number, oIndex: number, value: string) => void;
+  removeOption: (qIndex: number, oIndex: number) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-2">
+            <button
+              type="button"
+              className="mt-1.5 cursor-grab touch-none active:cursor-grabbing"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="h-5 w-5 shrink-0 text-muted-foreground" />
+            </button>
+            <div className="flex-1 space-y-4">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    placeholder={`Question ${qIndex + 1}`}
+                    value={question.question_text}
+                    onChange={(e) =>
+                      updateQuestion(qIndex, { question_text: e.target.value })
+                    }
+                  />
+                </div>
+                <Select
+                  value={question.question_type}
+                  onValueChange={(v) => {
+                    if (!v) return;
+                    const updates: Partial<Question> = { question_type: v as QuestionType };
+                    if (
+                      (v === "single_choice" || v === "multiple_choice") &&
+                      question.options.length === 0
+                    ) {
+                      updates.options = ["", ""];
+                    }
+                    if (v === "short_text" || v === "long_text" || v === "rating") {
+                      updates.options = [];
+                    }
+                    updateQuestion(qIndex, updates);
+                  }}
+                >
+                  <SelectTrigger className="w-44">
+                    <SelectValue>{questionTypeLabels[question.question_type]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(questionTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(question.question_type === "single_choice" ||
+                question.question_type === "multiple_choice") && (
+                <div className="space-y-2 pl-2">
+                  {question.options.map((option, oIndex) => (
+                    <div key={oIndex} className="flex items-center gap-2">
+                      <Input
+                        placeholder={`Option ${oIndex + 1}`}
+                        value={option}
+                        className="flex-1 ml-4"
+                        onChange={(e) =>
+                          updateOption(qIndex, oIndex, e.target.value)
+                        }
+                      />
+                      {question.options.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeOption(qIndex, oIndex)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-1"
+                    onClick={() => addOption(qIndex)}
+                  >
+                    <Plus className="mr-1 h-3.5 w-3.5" />
+                    Add option
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {questionsCount > 1 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mt-1 text-destructive"
+                onClick={() => removeQuestion(qIndex)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export function CreateFormBuilder({
   workspaceId,
   slug,
@@ -45,18 +213,37 @@ export function CreateFormBuilder({
   slug: string;
 }) {
   const router = useRouter();
+  const dndId = useId();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [questions, setQuestions] = useState<Question[]>([
-    { question_text: "", question_type: "short_text", options: [], required: true },
+    { id: generateQuestionId(), question_text: "", question_type: "short_text", options: [], required: true },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setQuestions((prev) => {
+        const oldIndex = prev.findIndex((q) => q.id === active.id);
+        const newIndex = prev.findIndex((q) => q.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  }
 
   function addQuestion() {
     setQuestions([
       ...questions,
-      { question_text: "", question_type: "short_text", options: [], required: true },
+      { id: generateQuestionId(), question_text: "", question_type: "short_text", options: [], required: true },
     ]);
   }
 
@@ -119,7 +306,8 @@ export function CreateFormBuilder({
       title,
       description: description || undefined,
       visibility,
-      questions: questions.map((q) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      questions: questions.map(({ id: _id, ...q }) => ({
         ...q,
         options: q.options.filter((o) => o.trim()),
       })),
@@ -178,109 +366,33 @@ export function CreateFormBuilder({
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
-        {questions.map((question, qIndex) => (
-          <Card key={qIndex}>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-2">
-                <GripVertical className="mt-1.5 h-5 w-5 shrink-0 text-muted-foreground" />
-                <div className="flex-1 space-y-4">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        placeholder={`Question ${qIndex + 1}`}
-                        value={question.question_text}
-                        onChange={(e) =>
-                          updateQuestion(qIndex, { question_text: e.target.value })
-                        }
-                      />
-                    </div>
-                    <Select
-                      value={question.question_type}
-                      onValueChange={(v) => {
-                        if (!v) return;
-                        const updates: Partial<Question> = { question_type: v as QuestionType };
-                        if (
-                          (v === "single_choice" || v === "multiple_choice") &&
-                          question.options.length === 0
-                        ) {
-                          updates.options = ["", ""];
-                        }
-                        if (v === "short_text" || v === "long_text" || v === "rating") {
-                          updates.options = [];
-                        }
-                        updateQuestion(qIndex, updates);
-                      }}
-                    >
-                      <SelectTrigger className="w-44">
-                        <SelectValue>{questionTypeLabels[question.question_type]}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(questionTypeLabels).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {(question.question_type === "single_choice" ||
-                    question.question_type === "multiple_choice") && (
-                    <div className="space-y-2 pl-2">
-                      {question.options.map((option, oIndex) => (
-                        <div key={oIndex} className="flex items-center gap-2">
-                          {/* <div className="h-4 w-4 shrink-0 rounded-full border border-muted-foreground/30" /> */}
-                          <Input
-                            placeholder={`Option ${oIndex + 1}`}
-                            value={option}
-                            className="flex-1 ml-4"
-                            onChange={(e) =>
-                              updateOption(qIndex, oIndex, e.target.value)
-                            }
-                          />
-                          {question.options.length > 2 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeOption(qIndex, oIndex)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="mt-1"
-                        onClick={() => addOption(qIndex)}
-                      >
-                        <Plus className="mr-1 h-3.5 w-3.5" />
-                        Add option
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {questions.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 text-destructive"
-                    onClick={() => removeQuestion(qIndex)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <DndContext
+        id={dndId}
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={questions.map((q) => q.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-4">
+            {questions.map((question, qIndex) => (
+              <SortableQuestionCard
+                key={question.id}
+                question={question}
+                qIndex={qIndex}
+                questionsCount={questions.length}
+                updateQuestion={updateQuestion}
+                removeQuestion={removeQuestion}
+                addOption={addOption}
+                updateOption={updateOption}
+                removeOption={removeOption}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       <Button type="button" variant="outline" className="w-full" onClick={addQuestion}>
         <Plus className="mr-2 h-4 w-4" />
