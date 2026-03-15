@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { createClient } from "@/lib/supabase/client";
 import VoxrLogo from "../common/logo";
 
@@ -85,31 +86,53 @@ export function WorkspaceHeader({
             </Button>
           </Link>
 
-          {isOwner && (
-            <Link href={`/w/${workspace.slug}/forms/new`}>
-              <Button size="sm" variant="ghost" className="gap-2">
-                <ClipboardList className="h-4 w-4" />
-              </Button>
-            </Link>
-          )}
+          <TooltipProvider>
+            {isOwner && (
+              <Tooltip>
+                <TooltipTrigger render={
+                  <Link href={`/w/${workspace.slug}/forms/new`}>
+                    <Button size="sm" variant="ghost" className="gap-2">
+                      <ClipboardList className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                } />
+                <TooltipContent>New Form</TooltipContent>
+              </Tooltip>
+            )}
 
-          {isOwner && (
-            <Link href={`/w/${workspace.slug}/analytics`}>
-              <Button variant="ghost" size="sm">
-                <BarChart3 className="h-4 w-4" />
-              </Button>
-            </Link>
-          )}
+            {isOwner && (
+              <Tooltip>
+                <TooltipTrigger render={
+                  <Link href={`/w/${workspace.slug}/analytics`}>
+                    <Button variant="ghost" size="sm">
+                      <BarChart3 className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                } />
+                <TooltipContent>Analytics</TooltipContent>
+              </Tooltip>
+            )}
 
-          <Link href={`/w/${workspace.slug}/settings`}>
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </Link>
+            <Tooltip>
+              <TooltipTrigger render={
+                <Link href={`/w/${workspace.slug}/settings`}>
+                  <Button variant="ghost" size="sm">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </Link>
+              } />
+              <TooltipContent>Settings</TooltipContent>
+            </Tooltip>
 
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-          </Button>
+            <Tooltip>
+              <TooltipTrigger render={
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              } />
+              <TooltipContent>Sign out</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </header>
