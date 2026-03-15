@@ -371,6 +371,75 @@ export async function removeMember(
   return { success: true };
 }
 
+export async function changeMemberRole(
+  workspaceId: string,
+  targetUserId: string,
+  newRole: "admin" | "member"
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  if (targetUserId === user.id) {
+    return { error: "You cannot change your own role" };
+  }
+
+  const { data: caller } = await supabase
+    .from("workspace_members")
+    .select("role")
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (!caller || (caller.role !== "owner" && caller.role !== "admin")) {
+    return { error: "Only the owner or an admin can change roles" };
+  }
+
+  // Only owner can downgrade admin → member
+  if (newRole === "member" && caller.role !== "owner") {
+    return { error: "Only the owner can demote an admin" };
+  }
+
+  // Cannot change the owner's role
+  const { data: target } = await supabase
+    .from("workspace_members")
+    .select("role")
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", targetUserId)
+    .eq("status", "active")
+    .single();
+
+  if (!target) {
+    return { error: "Target user is not an active member" };
+  }
+
+  if (target.role === "owner") {
+    return { error: "Cannot change the owner's role" };
+  }
+
+  if (target.role === newRole) {
+    return { error: `User is already a ${newRole}` };
+  }
+
+  const { error } = await supabase
+    .from("workspace_members")
+    .update({ role: newRole })
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", targetUserId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
 export async function deleteWorkspace(workspaceId: string) {
   const supabase = await createClient();
   const {

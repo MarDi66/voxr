@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Crown, UserMinus, ArrowRightLeft, Shield } from "lucide-react";
+import { Crown, UserMinus, ArrowRightLeft, Shield, ShieldPlus, ShieldMinus, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,10 +24,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-import { removeMember, transferOwnership } from "@/actions/workspaces";
+import { removeMember, transferOwnership, changeMemberRole } from "@/actions/workspaces";
 import { createClient } from "@/lib/supabase/client";
 
 type Member = {
@@ -104,7 +112,24 @@ export function MembersTab({
     window.location.reload();
   }
 
+  async function handleRoleChange(userId: string, newRole: "admin" | "member") {
+    const result = await changeMemberRole(workspaceId, userId, newRole);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(`Role changed to ${newRole}`);
+    fetchMembers();
+  }
+
+  const [confirmAction, setConfirmAction] = useState<{
+    type: "transfer" | "remove";
+    userId: string;
+    email: string;
+  } | null>(null);
+
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>Members</CardTitle>
@@ -165,66 +190,48 @@ export function MembersTab({
                     {isOwnerOrAdmin && (
                       <TableCell>
                         {canManage && (
-                          <div className="flex gap-1">
-                            {isOwner && (
-                            <AlertDialog>
-                              <AlertDialogTrigger render={<Button variant="outline" size="sm" className="ml-auto" />}>
-                                  <ArrowRightLeft />
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Transfer ownership?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will make {member.email} the workspace
-                                    owner and you will become a regular member.
-                                    This action cannot be undone without the new
-                                    owner&apos;s consent.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() =>
-                                      handleTransfer(member.user_id)
-                                    }
-                                  >
-                                    Transfer
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                            )}
-
-                            <AlertDialog>
-                              <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
-                                  <UserMinus />
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Remove member?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will remove {member.email} from the
-                                    workspace. They will need a new invite to
-                                    rejoin.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() =>
-                                      handleRemove(member.user_id)
-                                    }
-                                  >
-                                    Remove
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-fit">
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>Role</DropdownMenuLabel>
+                                {isMemberAdmin && isOwner && (
+                                  <DropdownMenuItem onClick={() => handleRoleChange(member.user_id, "member")}>
+                                    <ShieldMinus className="h-4 w-4" />
+                                    Demote to member
+                                  </DropdownMenuItem>
+                                )}
+                                {!isMemberAdmin && (
+                                  <DropdownMenuItem onClick={() => handleRoleChange(member.user_id, "admin")}>
+                                    <ShieldPlus className="h-4 w-4" />
+                                    Promote to admin
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuGroup>
+                              {isOwner && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuGroup>
+                                    <DropdownMenuLabel>Ownership</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => setConfirmAction({ type: "transfer", userId: member.user_id, email: member.email })}>
+                                      <ArrowRightLeft className="h-4 w-4" />
+                                      Transfer ownership
+                                    </DropdownMenuItem>
+                                  </DropdownMenuGroup>
+                                </>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onClick={() => setConfirmAction({ type: "remove", userId: member.user_id, email: member.email })}
+                              >
+                                <UserMinus className="h-4 w-4" />
+                                Remove from workspace
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </TableCell>
                     )}
@@ -236,5 +243,49 @@ export function MembersTab({
         )}
       </CardContent>
     </Card>
+
+    <AlertDialog
+      open={confirmAction?.type === "transfer"}
+      onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Transfer ownership?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will make {confirmAction?.email} the workspace owner and you
+            will become a regular member. This action cannot be undone without
+            the new owner&apos;s consent.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => { if (confirmAction) handleTransfer(confirmAction.userId); }}>
+            Transfer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog
+      open={confirmAction?.type === "remove"}
+      onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove member?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will remove {confirmAction?.email} from the workspace. They
+            will need a new invite to rejoin.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => { if (confirmAction) handleRemove(confirmAction.userId); }}>
+            Remove
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
