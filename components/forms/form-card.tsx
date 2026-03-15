@@ -27,7 +27,7 @@ export function FormCard({
   isOwner?: boolean;
 }) {
   return (
-    <Card className="border-primary/30 bg-linear-to-r from-primary/5 to-transparent">
+    <Card className="ring-2 ring-blue-400 bg-blue-50/50 dark:bg-blue-950/20">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
