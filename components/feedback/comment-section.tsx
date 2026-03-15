@@ -222,7 +222,7 @@ export function CommentSection({
       )}
 
       {!isItemHidden && <Card>
-        <CardContent className="pt-4">
+        <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               <FormField
