@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Flag } from "lucide-react";
+import { Loader2, Flag, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -116,6 +116,16 @@ function CommentItem({
           {isHidden ? "This comment has been hidden by a moderator." : comment.body}
         </p>
         <div className="flex items-center shrink-0">
+          {isHidden && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {!isHidden && (
             <TooltipProvider>
               <Tooltip>

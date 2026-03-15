@@ -1,10 +1,16 @@
 import Link from "next/link";
-import { MessageSquare, Pin, Flag } from "lucide-react";
+import { MessageSquare, Pin, Flag, Info } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FlagButton } from "@/components/feedback/flag-button";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 type FeedItem = {
   id: string;
@@ -69,6 +75,16 @@ export function FeedItemCard({
               <CardTitle className={cn("text-base leading-snug", isHidden && "select-none blur-sm")}>
                 {isHidden ? "Hidden content" : item.title}
               </CardTitle>
+              {isHidden && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger onClick={(e) => e.preventDefault()}>
+                      <Info className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <div className="flex flex-row-reverse sm:flex-row items-center gap-1">
               {isOwner && !isHidden && (

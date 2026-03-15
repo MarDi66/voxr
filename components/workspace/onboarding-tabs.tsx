@@ -12,9 +12,11 @@ import { JoinWorkspaceForm } from "./join-workspace-form";
 export function OnboardingTabs({
   defaultToken,
   existingWorkspaceSlug,
+  invitedWorkspaceName,
 }: {
   defaultToken?: string;
   existingWorkspaceSlug?: string;
+  invitedWorkspaceName?: string | null;
 }) {
   const router = useRouter();
 
@@ -35,7 +37,7 @@ export function OnboardingTabs({
           <CreateWorkspaceForm />
         </TabsContent>
         <TabsContent value="join">
-          <JoinWorkspaceForm defaultToken={defaultToken} />
+          <JoinWorkspaceForm defaultToken={defaultToken} invitedWorkspaceName={invitedWorkspaceName} />
         </TabsContent>
       </Tabs>
       {existingWorkspaceSlug && (

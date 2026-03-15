@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { joinWorkspaceSchema, type JoinWorkspaceInput } from "@/lib/validators/workspaces";
 import { consumeInvite } from "@/actions/workspaces";
 
-export function JoinWorkspaceForm({ defaultToken }: { defaultToken?: string }) {
+export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName }: { defaultToken?: string; invitedWorkspaceName?: string | null }) {
   const router = useRouter();
   const form = useForm<JoinWorkspaceInput>({
     resolver: zodResolver(joinWorkspaceSchema),
@@ -40,9 +40,15 @@ export function JoinWorkspaceForm({ defaultToken }: { defaultToken?: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Join a workspace</CardTitle>
+        <CardTitle>
+          {invitedWorkspaceName
+            ? `Join ${invitedWorkspaceName}`
+            : "Join a workspace"}
+        </CardTitle>
         <CardDescription>
-          Enter an invite token to join an existing workspace
+          {invitedWorkspaceName
+            ? `You've been invited to join ${invitedWorkspaceName}`
+            : "Enter an invite token to join an existing workspace"}
         </CardDescription>
       </CardHeader>
       <CardContent>

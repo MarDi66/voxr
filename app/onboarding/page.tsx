@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingTabs } from "@/components/workspace/onboarding-tabs";
 import VoxrLogo from "@/components/common/logo";
+import { getWorkspaceNameByToken } from "@/actions/workspaces";
 
 export default async function OnboardingPage({
   searchParams,
@@ -37,6 +38,10 @@ export default async function OnboardingPage({
     redirect(`/w/${existingWorkspaceSlug}`);
   }
 
+  const invitedWorkspaceName = resolvedParams.token
+    ? await getWorkspaceNameByToken(resolvedParams.token)
+    : null;
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -56,6 +61,7 @@ export default async function OnboardingPage({
         <OnboardingTabs
           defaultToken={resolvedParams.token}
           existingWorkspaceSlug={existingWorkspaceSlug}
+          invitedWorkspaceName={invitedWorkspaceName}
         />
       </div>
     </div>

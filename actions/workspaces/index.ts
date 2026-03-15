@@ -152,6 +152,34 @@ export async function consumeInvite(input: { inviteToken: string }) {
   return { success: true, slug: workspace?.slug || "" };
 }
 
+export async function getWorkspaceNameByToken(token: string): Promise<string | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const tokenHash = hashToken(token);
+
+  const { data: invite } = await supabase
+    .from("workspace_invites")
+    .select("workspace_id")
+    .eq("token_hash", tokenHash)
+    .eq("status", "active")
+    .single();
+
+  if (!invite) return null;
+
+  const { data: workspace } = await supabase
+    .from("workspaces")
+    .select("name")
+    .eq("id", invite.workspace_id)
+    .single();
+
+  return workspace?.name ?? null;
+}
+
 export async function createInvite(input: {
   workspaceId: string;
 }) {
