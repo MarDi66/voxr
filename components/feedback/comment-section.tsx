@@ -39,6 +39,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type Comment = {
   id: string;
@@ -89,74 +90,80 @@ function CommentItem({
   const isHidden = comment.status === "hidden";
 
   return (
-    <div className="space-y-2 py-3">
-      <div className="flex items-center gap-2 mb-1">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={comment.anonymousAvatarUrl}
-          alt={comment.anonymousName}
-          className="h-8 w-8 rounded-full shrink-0"
-        />
-        <div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs font-medium block">{comment.anonymousName}</span>
-            {comment.is_item_author && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
-                Author
-              </Badge>
-            )}
+    <div className="group space-y-2 py-3">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={comment.anonymousAvatarUrl}
+            alt={comment.anonymousName}
+            className="h-8 w-8 rounded-full shrink-0"
+          />
+          <div>
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-medium block">{comment.anonymousName}</span>
+              {comment.is_item_author && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+                  Author
+                </Badge>
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {new Date(comment.created_at).toLocaleString()}
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {new Date(comment.created_at).toLocaleString()}
-          </span>
+        </div>
+        <div className="flex items-center shrink-0">
+            {isHidden && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {!isHidden && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          'h-7 gap-1 px-2 shrink-0',
+                          comment.reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive",
+                          comment.reportCount === 0 && 'sm:hidden sm:group-hover:inline-flex'
+                        )}
+                        onClick={() => {
+                          if (comment.is_own) {
+                            toast.error("You cannot report your own comment");
+                            return;
+                          }
+                          if (comment.hasReported) {
+                            toast.error("You have already reported this comment");
+                            return;
+                          }
+                          setShowReportDialog(true);
+                        }}
+                      />
+                    }
+                  >
+                    <Flag className="h-3.5 w-3.5" />
+                    {comment.reportCount > 0 && <span className="text-xs">{comment.reportCount}</span>}
+                  </TooltipTrigger>
+                  <TooltipContent>Report comment</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
         </div>
       </div>
       <div className="flex items-start justify-between gap-2">
         <p className={`text-sm mt-2 ${isHidden ? "select-none blur-sm pl-3 pb-2" : ""}`}>
           {isHidden ? "This comment has been hidden by a moderator." : comment.body}
         </p>
-        <div className="flex items-center shrink-0">
-          {isHidden && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          {!isHidden && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-7 gap-1 px-2 shrink-0 ${comment.reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
-                      onClick={() => {
-                        if (comment.is_own) {
-                          toast.error("You cannot report your own comment");
-                          return;
-                        }
-                        if (comment.hasReported) {
-                          toast.error("You have already reported this comment");
-                          return;
-                        }
-                        setShowReportDialog(true);
-                      }}
-                    />
-                  }
-                >
-                  <Flag className="h-3.5 w-3.5" />
-                  {comment.reportCount > 0 && <span className="text-xs">{comment.reportCount}</span>}
-                </TooltipTrigger>
-                <TooltipContent>Report comment</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
       </div>
 
       {!isHidden && (

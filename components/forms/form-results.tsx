@@ -58,7 +58,7 @@ export function FormResults({
 
   return (
     <div className="space-y-6">
-      <Card className={allAnswered ? "ring-2 ring-green-500 bg-green-50/50 dark:bg-green-950/20" : "ring-2 ring-blue-400 bg-blue-50/50 dark:bg-blue-950/20"}>
+      <Card className="ring-2 ring-blue-400 bg-blue-50/50 dark:bg-blue-950/20">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <CardTitle>{title}</CardTitle>
