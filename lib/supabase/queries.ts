@@ -444,3 +444,124 @@ export async function getWorkspaceAnalytics(workspaceId: string) {
   };
 }
 
+export async function getWorkspaceForms(workspaceId: string) {
+  const supabase = await createClient();
+
+  const { data: forms, error } = await supabase
+    .from("forms")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .eq("status", "published")
+    .order("created_at", { ascending: false });
+
+  if (error || !forms) return [];
+
+  const formIds = forms.map((f) => f.id);
+
+  // Get response counts per form
+  const { data: responses } = await supabase
+    .from("form_responses")
+    .select("id, form_id")
+    .in("form_id", formIds.length > 0 ? formIds : ["__none__"]);
+
+  const responseCountMap: Record<string, number> = {};
+  responses?.forEach((r) => {
+    responseCountMap[r.form_id] = (responseCountMap[r.form_id] || 0) + 1;
+  });
+
+  // Check which forms the current user has already responded to
+  const { data: ownResponses } = await supabase
+    .from("form_responses_safe")
+    .select("form_id, is_own")
+    .in("form_id", formIds.length > 0 ? formIds : ["__none__"])
+    .eq("is_own", true);
+
+  const respondedSet = new Set(ownResponses?.map((r) => r.form_id) || []);
+
+  return forms.map((form) => ({
+    ...form,
+    responseCount: responseCountMap[form.id] || 0,
+    hasResponded: respondedSet.has(form.id),
+  }));
+}
+
+export async function getFormDetail(formId: string) {
+  const supabase = await createClient();
+
+  const { data: form, error } = await supabase
+    .from("forms")
+    .select("*")
+    .eq("id", formId)
+    .single();
+
+  if (error || !form) return null;
+
+  const { data: questions } = await supabase
+    .from("form_questions")
+    .select("*")
+    .eq("form_id", formId)
+    .order("position", { ascending: true });
+
+  // Check if current user has already responded
+  const { data: ownResponses } = await supabase
+    .from("form_responses_safe")
+    .select("id, is_own")
+    .eq("form_id", formId)
+    .eq("is_own", true);
+
+  const hasResponded = (ownResponses?.length ?? 0) > 0;
+
+  return {
+    ...form,
+    questions: questions || [],
+    hasResponded,
+  };
+}
+
+export async function getFormResults(formId: string) {
+  const supabase = await createClient();
+
+  const { data: form, error } = await supabase
+    .from("forms")
+    .select("*")
+    .eq("id", formId)
+    .single();
+
+  if (error || !form) return null;
+
+  const { data: questions } = await supabase
+    .from("form_questions")
+    .select("*")
+    .eq("form_id", formId)
+    .order("position", { ascending: true });
+
+  // Get all responses
+  const { data: responses } = await supabase
+    .from("form_responses")
+    .select("id, form_id")
+    .eq("form_id", formId);
+
+  const responseIds = responses?.map((r) => r.id) || [];
+
+  // Get all answers
+  const { data: answers } = await supabase
+    .from("form_answers")
+    .select("*")
+    .in("response_id", responseIds.length > 0 ? responseIds : ["__none__"]);
+
+  // Group answers by question
+  const answersByQuestion: Record<string, string[]> = {};
+  answers?.forEach((a) => {
+    if (!answersByQuestion[a.question_id]) {
+      answersByQuestion[a.question_id] = [];
+    }
+    answersByQuestion[a.question_id].push(a.answer_value);
+  });
+
+  return {
+    ...form,
+    questions: questions || [],
+    responseCount: responses?.length || 0,
+    answersByQuestion,
+  };
+}

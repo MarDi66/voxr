@@ -43,6 +43,7 @@ export default async function WorkspaceLayout({
       <WorkspaceHeader
         workspace={workspace}
         workspaces={workspaces}
+        isOwner={workspaces.some((ws) => ws.id === workspace.id && ws.role === "owner")}
       />
       <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
     </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { BarChart3, LogOut, Plus, Settings, ChevronDown, Building2 } from "lucide-react";
+import { BarChart3, LogOut, Plus, Settings, ChevronDown, Building2, ClipboardList } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,9 +28,11 @@ type Workspace = {
 export function WorkspaceHeader({
   workspace,
   workspaces,
+  isOwner = false,
 }: {
   workspace: { id: string; name: string; slug: string };
   workspaces: Workspace[];
+  isOwner?: boolean;
 }) {
   const router = useRouter();
 
@@ -82,6 +84,15 @@ export function WorkspaceHeader({
               <span className="hidden sm:inline">New Feedback</span>
             </Button>
           </Link>
+
+          {isOwner && (
+            <Link href={`/w/${workspace.slug}/forms/new`}>
+              <Button size="sm" variant="outline" className="gap-2">
+                <ClipboardList className="h-4 w-4" />
+                <span className="hidden sm:inline">New Form</span>
+              </Button>
+            </Link>
+          )}
 
           <Link href={`/w/${workspace.slug}/analytics`}>
             <Button variant="ghost" size="sm">
