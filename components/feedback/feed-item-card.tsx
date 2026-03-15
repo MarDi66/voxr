@@ -57,11 +57,11 @@ export function FeedItemCard({
         className={cn(
           "transition-colors hover:bg-accent/50",
           item.is_flagged &&
-            "ring-2 ring-amber-400 bg-amber-50/50 dark:bg-amber-950/20"
+            "ring-2 ring-amber-400/30"
         )}
       >
         <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-2">
             <div className="flex items-center gap-2">
               {item.is_flagged && (
                 <Pin className="h-4 w-4 shrink-0 text-amber-600" />
@@ -70,7 +70,7 @@ export function FeedItemCard({
                 {isHidden ? "Hidden content" : item.title}
               </CardTitle>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-row-reverse sm:flex-row items-center gap-1">
               {isOwner && !isHidden && (
                 <FlagButton
                   itemId={item.id}

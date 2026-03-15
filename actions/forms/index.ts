@@ -141,6 +141,29 @@ export async function closeForm(formId: string) {
     return { error: "Not authenticated" };
   }
 
+  // Verify the user is the workspace owner
+  const { data: form } = await supabase
+    .from("forms")
+    .select("workspace_id")
+    .eq("id", formId)
+    .single();
+
+  if (!form) {
+    return { error: "Form not found" };
+  }
+
+  const { data: membership } = await supabase
+    .from("workspace_members")
+    .select("role")
+    .eq("workspace_id", form.workspace_id)
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (membership?.role !== "owner") {
+    return { error: "Only the workspace owner can close forms" };
+  }
+
   const { error } = await supabase
     .from("forms")
     .update({ status: "closed" })

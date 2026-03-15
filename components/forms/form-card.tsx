@@ -1,9 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import { ClipboardList, Eye, Lock, Users, BarChart3 } from "lucide-react";
+import { ClipboardList, Eye, Lock, Users, BarChart3, XCircle } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 type FormItem = {
   id: string;
@@ -26,15 +28,23 @@ export function FormCard({
   slug: string;
   isOwner?: boolean;
 }) {
+  const isClosed = form.status === "closed";
+
   return (
-    <Card className="ring-2 ring-blue-400 bg-blue-50/50 dark:bg-blue-950/20">
+    <Card className={isClosed ? "ring-2 ring-muted opacity-75" : "ring-2 ring-blue-400/30"}>
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 shrink-0 text-primary" />
+            <ClipboardList className="h-4 w-4 shrink-0 text-blue-600" />
             <CardTitle className="text-base leading-snug">{form.title}</CardTitle>
           </div>
           <div className="flex items-center gap-1.5">
+            {isClosed && (
+              <Badge variant="destructive" className="gap-1">
+                <XCircle className="h-3 w-3" />
+                Closed
+              </Badge>
+            )}
             <Badge variant="secondary" className="gap-1">
               {form.visibility === "public" ? (
                 <Eye className="h-3 w-3" />
@@ -48,11 +58,11 @@ export function FormCard({
       </CardHeader>
       <CardContent>
         {form.description && (
-          <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+          <p className="mb-6 sm:mb-3 line-clamp-2 text-sm text-muted-foreground">
             {form.description}
           </p>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span>{new Date(form.created_at).toLocaleDateString()}</span>
             <span className="flex items-center gap-1">
@@ -63,7 +73,7 @@ export function FormCard({
           <div className="flex gap-2">
             {isOwner && (
               <Link href={`/w/${slug}/forms/${form.id}/results`}>
-                <Button variant="ghost" size="sm" className="gap-1.5">
+                <Button variant="outline" size="sm" className="gap-1.5">
                   <BarChart3 className="h-3.5 w-3.5" />
                   Results
                 </Button>
@@ -71,21 +81,26 @@ export function FormCard({
             )}
             {form.visibility === "public" && !isOwner && (
               <Link href={`/w/${slug}/forms/${form.id}/results`}>
-                <Button variant="ghost" size="sm" className="gap-1.5">
+                <Button variant="outline" size="sm" className="gap-1.5">
                   <BarChart3 className="h-3.5 w-3.5" />
                   Results
                 </Button>
               </Link>
             )}
-            <Link href={`/w/${slug}/forms/${form.id}`}>
-              <Button
-                size="sm"
-                variant={form.hasResponded ? "outline" : "default"}
-                disabled={form.hasResponded}
-              >
-                {form.hasResponded ? "Completed" : "Fill out"}
-              </Button>
-            </Link>
+            {form.hasResponded ? (
+              <div className={buttonVariants({ variant: "ghost", size: "sm" })}>
+                Completed
+              </div>
+            ) : (
+              <Link href={`/w/${slug}/forms/${form.id}`}>
+                <Button
+                  size="sm"
+                  variant="default"
+                >
+                  Fill out
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </CardContent>

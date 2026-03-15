@@ -451,7 +451,6 @@ export async function getWorkspaceForms(workspaceId: string) {
     .from("forms")
     .select("*")
     .eq("workspace_id", workspaceId)
-    .eq("status", "published")
     .order("created_at", { ascending: false });
 
   if (error || !forms) return [];
@@ -478,11 +477,19 @@ export async function getWorkspaceForms(workspaceId: string) {
 
   const respondedSet = new Set(ownResponses?.map((r) => r.form_id) || []);
 
-  return forms.map((form) => ({
+  const enriched = forms.map((form) => ({
     ...form,
     responseCount: responseCountMap[form.id] || 0,
     hasResponded: respondedSet.has(form.id),
   }));
+
+  // Closed forms sink to the bottom; within each group order is preserved (newest first)
+  enriched.sort((a, b) => {
+    if (a.status === b.status) return 0;
+    return a.status === "closed" ? 1 : -1;
+  });
+
+  return enriched;
 }
 
 export async function getFormDetail(formId: string) {
@@ -529,17 +536,23 @@ export async function getFormResults(formId: string) {
 
   if (error || !form) return null;
 
-  const { data: questions } = await supabase
-    .from("form_questions")
-    .select("*")
-    .eq("form_id", formId)
-    .order("position", { ascending: true });
-
-  // Get all responses
-  const { data: responses } = await supabase
-    .from("form_responses")
-    .select("id, form_id")
-    .eq("form_id", formId);
+  const [{ data: questions }, { data: responses }, { data: members }] =
+    await Promise.all([
+      supabase
+        .from("form_questions")
+        .select("*")
+        .eq("form_id", formId)
+        .order("position", { ascending: true }),
+      supabase
+        .from("form_responses")
+        .select("id, form_id")
+        .eq("form_id", formId),
+      supabase
+        .from("workspace_members")
+        .select("user_id")
+        .eq("workspace_id", form.workspace_id)
+        .eq("status", "active"),
+    ]);
 
   const responseIds = responses?.map((r) => r.id) || [];
 
@@ -562,6 +575,7 @@ export async function getFormResults(formId: string) {
     ...form,
     questions: questions || [],
     responseCount: responses?.length || 0,
+    memberCount: members?.length || 0,
     answersByQuestion,
   };
 }

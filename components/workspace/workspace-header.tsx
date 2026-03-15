@@ -87,9 +87,8 @@ export function WorkspaceHeader({
 
           {isOwner && (
             <Link href={`/w/${workspace.slug}/forms/new`}>
-              <Button size="sm" variant="outline" className="gap-2">
+              <Button size="sm" variant="ghost" className="gap-2">
                 <ClipboardList className="h-4 w-4" />
-                <span className="hidden sm:inline">New Form</span>
               </Button>
             </Link>
           )}

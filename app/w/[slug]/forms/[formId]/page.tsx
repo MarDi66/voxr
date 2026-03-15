@@ -19,6 +19,10 @@ export default async function FillFormPage({
     redirect(`/w/${slug}`);
   }
 
+  if (form.status === "closed") {
+    redirect(`/w/${slug}/forms/${formId}/results`);
+  }
+
   if (form.hasResponded) {
     redirect(`/w/${slug}/forms/${formId}/results`);
   }

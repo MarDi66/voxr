@@ -1,8 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Users, XCircle } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { closeForm } from "@/actions/forms";
 
 type Question = {
   id: string;
@@ -13,30 +19,56 @@ type Question = {
 };
 
 export function FormResults({
+  formId,
   title,
   description,
   visibility,
+  status,
   questions,
   responseCount,
+  memberCount,
   answersByQuestion,
+  isOwner = false,
 }: {
+  formId: string;
   title: string;
   description?: string | null;
   visibility: string;
+  status: string;
   questions: Question[];
   responseCount: number;
+  memberCount: number;
   answersByQuestion: Record<string, string[]>;
+  isOwner?: boolean;
 }) {
+  const router = useRouter();
+  const [closing, setClosing] = useState(false);
+  const allAnswered = memberCount > 0 && responseCount >= memberCount;
+  const isClosed = status === "closed";
+
+  async function handleClose() {
+    setClosing(true);
+    const result = await closeForm(formId);
+    if ("error" in result) {
+      setClosing(false);
+      return;
+    }
+    router.refresh();
+  }
+
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className={allAnswered ? "ring-2 ring-green-500 bg-green-50/50 dark:bg-green-950/20" : "ring-2 ring-blue-400 bg-blue-50/50 dark:bg-blue-950/20"}>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <CardTitle>{title}</CardTitle>
-            <div className="flex gap-2">
-              <Badge variant="secondary">
-                {responseCount} response{responseCount !== 1 && "s"}
-              </Badge>
+            <div className="flex flex-wrap gap-2">
+              {isClosed && (
+                <Badge variant="destructive" className="gap-1">
+                  <XCircle className="h-3 w-3" />
+                  Closed
+                </Badge>
+              )}
               <Badge variant={visibility === "public" ? "default" : "outline"}>
                 {visibility === "public" ? "Public" : "Private"} results
               </Badge>
@@ -44,6 +76,28 @@ export function FormResults({
           </div>
           {description && (
             <p className="text-sm text-muted-foreground">{description}</p>
+          )}
+          <div className={`flex items-center gap-2 pt-2 ${allAnswered ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+            {allAnswered ? (
+              <CheckCircle2 className="h-5 w-5" />
+            ) : (
+              <Users className="h-4 w-4" />
+            )}
+            <span className="text-sm font-medium">
+              {responseCount} / {memberCount} member{memberCount !== 1 && "s"} answered
+            </span>
+          </div>
+          {isOwner && !isClosed && (
+            <div className="pt-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleClose}
+                disabled={closing}
+              >
+                {closing ? "Closing…" : "Close form"}
+              </Button>
+            </div>
           )}
         </CardHeader>
       </Card>

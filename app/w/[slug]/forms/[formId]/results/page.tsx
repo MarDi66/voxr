@@ -42,12 +42,16 @@ export default async function FormResultsPage({
       </Link>
 
       <FormResults
+        formId={formId}
         title={formData.title}
         description={formData.description}
         visibility={formData.visibility}
+        status={formData.status}
         questions={formData.questions}
         responseCount={formData.responseCount}
+        memberCount={formData.memberCount}
         answersByQuestion={formData.answersByQuestion}
+        isOwner={isOwner}
       />
     </div>
   );
