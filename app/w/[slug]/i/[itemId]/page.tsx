@@ -62,7 +62,7 @@ export default async function ItemDetailPage({
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="group">
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-2">

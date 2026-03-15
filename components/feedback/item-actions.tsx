@@ -30,6 +30,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export function ItemActions({
   itemId,
@@ -90,7 +91,11 @@ export function ItemActions({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`h-7 gap-1 px-2 ${reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
+                  className={cn(
+                    'h-7 gap-1 px-2',
+                    reportCount > 0 ? "text-destructive" : "text-muted-foreground hover:text-destructive",
+                    reportCount === 0 && 'sm:hidden sm:group-hover:inline-flex'
+                  )}
                   onClick={() => {
                     if (isOwn) {
                       toast.error("You cannot report your own feedback");
