@@ -93,11 +93,13 @@ export function WorkspaceHeader({
             </Link>
           )}
 
-          <Link href={`/w/${workspace.slug}/analytics`}>
-            <Button variant="ghost" size="sm">
-              <BarChart3 className="h-4 w-4" />
-            </Button>
-          </Link>
+          {isOwner && (
+            <Link href={`/w/${workspace.slug}/analytics`}>
+              <Button variant="ghost" size="sm">
+                <BarChart3 className="h-4 w-4" />
+              </Button>
+            </Link>
+          )}
 
           <Link href={`/w/${workspace.slug}/settings`}>
             <Button variant="ghost" size="sm">
