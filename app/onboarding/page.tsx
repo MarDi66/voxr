@@ -3,6 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { OnboardingTabs } from "@/components/workspace/onboarding-tabs";
 import VoxrLogo from "@/components/common/logo";
 import { getInviteInfo } from "@/actions/workspaces";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Onboarding",
+  description: "Create or join your private Voxr workspace.",
+  path: "/onboarding",
+  index: false,
+});
 
 export default async function OnboardingPage({
   searchParams,

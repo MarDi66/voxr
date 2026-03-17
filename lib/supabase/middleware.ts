@@ -35,13 +35,12 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't require auth
-  const publicRoutes = ["/", "/auth", "/auth/callback"];
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith("/auth/")
+  const privateRoutePrefixes = ["/w", "/onboarding", "/app", "/dashboard"];
+  const isPrivateRoute = privateRoutePrefixes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  if (!user && !isPublicRoute) {
+  if (!user && isPrivateRoute) {
     const url = request.nextUrl.clone();
     const returnTo = request.nextUrl.pathname + request.nextUrl.search;
     url.pathname = "/auth";
