@@ -12,68 +12,53 @@ const footerGroups = [
   {
     title: "Use cases",
     links: [
-      {
-        href: "/solutions",
-        label: "Solutions hub",
-      },
-      {
-        href: "/solutions/employee-feedback-platform",
-        label: "Employee feedback platform",
-      },
-      {
-        href: "/solutions/employee-suggestion-box-software",
-        label: "Suggestion box software",
-      },
+      { href: "/solutions", label: "Solutions hub" },
+      { href: "/solutions/employee-feedback-platform", label: "Employee feedback platform" },
+      { href: "/solutions/employee-suggestion-box-software", label: "Suggestion box software" },
     ],
   },
   {
     title: "Learn",
     links: [
-      {
-        href: "/guides",
-        label: "Guides hub",
-      },
-      {
-        href: "/resources",
-        label: "Resources hub",
-      },
-      {
-        href: "/glossary",
-        label: "Glossary hub",
-      },
+      { href: "/guides", label: "Guides hub" },
+      { href: "/resources", label: "Resources hub" },
+      { href: "/glossary", label: "Glossary hub" },
     ],
   },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/10">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
-        <div className="space-y-4">
-          <p className="text-lg font-semibold">Voxr</p>
-          <p className="max-w-md text-sm leading-6 text-muted-foreground">
+    <footer className="border-t border-[#2A2722]">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
+        <div className="space-y-5">
+          <p className="font-display text-xl font-medium tracking-tight text-[#EAE6DF]">
+            Voxr
+          </p>
+          <p className="max-w-sm text-sm leading-relaxed text-[#8A857C]">
             Anonymous internal feedback software for modern teams that want
             honest input, stronger trust, and a lightweight way to turn feedback
             into action.
           </p>
           <Link
             href="/auth"
-            className="text-sm font-medium text-foreground underline decoration-white/20 underline-offset-4"
+            className="inline-block text-sm font-medium text-[#c45d3e] underline decoration-[#c45d3e]/30 underline-offset-4 transition-colors hover:decoration-[#c45d3e]"
           >
             Create a workspace
           </Link>
         </div>
+
         {footerGroups.map((group) => (
-          <div key={group.title} className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <div key={group.title} className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#5C5850]">
               {group.title}
             </p>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3 text-sm">
               {group.links.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
+                    className="text-[#8A857C] transition-colors hover:text-[#EAE6DF]"
                   >
                     {link.label}
                   </Link>

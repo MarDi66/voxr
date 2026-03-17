@@ -3,9 +3,8 @@ import { SiteHeader } from "@/components/marketing/site-header";
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="font-sans">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.18),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.14),transparent_26%),linear-gradient(180deg,#060816_0%,#0c1224_45%,#080b14_100%)]" />
-      <div className="fixed inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
+    <div className="marketing-theme font-body min-h-screen bg-[#0C0B09] text-[#EAE6DF]">
+      <div className="fixed inset-x-0 top-0 z-50 h-[3px] bg-gradient-to-r from-[#c45d3e] via-[#d4785e] to-[#4a7c59]" />
       <SiteHeader />
       {children}
       <SiteFooter />
