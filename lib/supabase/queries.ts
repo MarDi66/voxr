@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { decrypt, decryptFields } from "@/lib/encryption";
 
 export async function getWorkspaceBySlug(slug: string) {
   const supabase = await createClient();
@@ -99,7 +100,7 @@ export async function getFeed(
   });
 
   const enriched = items.map((item) => ({
-    ...item,
+    ...decryptFields(item, ["title", "body"]),
     commentCount: commentCountMap[item.id] || 0,
     reactionCounts: reactionCountMap[item.id] || {},
     reportCount: reportCountMap[item.id] || 0,
@@ -202,12 +203,12 @@ export async function getItemDetail(itemId: string) {
   });
 
   return {
-    ...item,
+    ...decryptFields(item, ["title", "body"]),
     reportCount: reportsMap[itemId]?.reportCount || 0,
     hasReported: reportsMap[itemId]?.hasReported || false,
     comments:
       comments?.map((c) => ({
-        ...c,
+        ...decryptFields(c, ["body"]),
         reactionCounts: commentReactionMap[c.id]?.counts || {},
         userReactions: commentReactionMap[c.id]?.userEmojis || [],
         reportCount: reportsMap[c.id]?.reportCount || 0,
@@ -478,7 +479,7 @@ export async function getWorkspaceForms(workspaceId: string) {
   const respondedSet = new Set(ownResponses?.map((r) => r.form_id) || []);
 
   const enriched = forms.map((form) => ({
-    ...form,
+    ...decryptFields(form, ["title", "description"]),
     responseCount: responseCountMap[form.id] || 0,
     hasResponded: respondedSet.has(form.id),
   }));
@@ -519,8 +520,11 @@ export async function getFormDetail(formId: string) {
   const hasResponded = (ownResponses?.length ?? 0) > 0;
 
   return {
-    ...form,
-    questions: questions || [],
+    ...decryptFields(form, ["title", "description"]),
+    questions: (questions || []).map((q) => ({
+      ...decryptFields(q, ["question_text"]),
+      options: (q.options as string[] || []).map((o: string) => decrypt(o)),
+    })),
     hasResponded,
   };
 }
@@ -562,18 +566,22 @@ export async function getFormResults(formId: string) {
     .select("*")
     .in("response_id", responseIds.length > 0 ? responseIds : ["__none__"]);
 
-  // Group answers by question
+  // Group answers by question, decrypting each value
   const answersByQuestion: Record<string, string[]> = {};
   answers?.forEach((a) => {
     if (!answersByQuestion[a.question_id]) {
       answersByQuestion[a.question_id] = [];
     }
-    answersByQuestion[a.question_id].push(a.answer_value);
+    const decrypted = decryptFields(a, ["answer_value"]);
+    answersByQuestion[a.question_id].push(decrypted.answer_value);
   });
 
   return {
-    ...form,
-    questions: questions || [],
+    ...decryptFields(form, ["title", "description"]),
+    questions: (questions || []).map((q) => ({
+      ...decryptFields(q, ["question_text"]),
+      options: (q.options as string[] || []).map((o: string) => decrypt(o)),
+    })),
     responseCount: responses?.length || 0,
     memberCount: members?.length || 0,
     answersByQuestion,

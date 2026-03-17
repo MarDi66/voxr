@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { encrypt } from "@/lib/encryption";
 import { createCommentSchema } from "@/lib/validators/feedback";
 
 export async function createComment(input: {
@@ -35,7 +36,7 @@ export async function createComment(input: {
   const { error } = await supabase.from("comments").insert({
     workspace_id: parsed.data.workspaceId,
     item_id: parsed.data.itemId,
-    body: parsed.data.body,
+    body: encrypt(parsed.data.body),
     author_id: user.id, // will be overwritten by trigger
   });
 

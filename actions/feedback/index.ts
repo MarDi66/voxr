@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { encrypt } from "@/lib/encryption";
 import { createItemSchema, updateItemSchema } from "@/lib/validators/feedback";
 import crypto from "crypto";
 
@@ -32,8 +33,8 @@ export async function createItem(input: {
     .insert({
       id: itemId,
       workspace_id: parsed.data.workspaceId,
-      title: parsed.data.title,
-      body: parsed.data.body,
+      title: encrypt(parsed.data.title),
+      body: encrypt(parsed.data.body),
       category: parsed.data.category,
       author_id: user.id, // will be overwritten by trigger
     });
@@ -66,8 +67,8 @@ export async function updateItem(input: {
   }
 
   const updateData: Record<string, string> = {};
-  if (parsed.data.title) updateData.title = parsed.data.title;
-  if (parsed.data.body) updateData.body = parsed.data.body;
+  if (parsed.data.title) updateData.title = encrypt(parsed.data.title);
+  if (parsed.data.body) updateData.body = encrypt(parsed.data.body);
   if (parsed.data.category) updateData.category = parsed.data.category;
 
   const { error } = await supabase

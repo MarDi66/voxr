@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { decryptFields } from "@/lib/encryption";
 import { reportTargetSchema } from "@/lib/validators/feedback";
 
 export async function reportTarget(input: {
@@ -132,10 +133,10 @@ export async function getReports(workspaceId: string) {
   ]);
 
   const itemsMap = new Map(
-    (itemsResult.data || []).map((i) => [i.id, i])
+    (itemsResult.data || []).map((i) => [i.id, decryptFields(i, ["title", "body"])])
   );
   const commentsMap = new Map(
-    (commentsResult.data || []).map((c) => [c.id, c])
+    (commentsResult.data || []).map((c) => [c.id, decryptFields(c, ["body"])])
   );
 
   const enriched = data.map((report) => ({

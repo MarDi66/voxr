@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { encrypt } from "@/lib/encryption";
 import { createFormSchema, submitFormResponseSchema } from "@/lib/validators/forms";
 import crypto from "crypto";
 
@@ -35,8 +36,8 @@ export async function createForm(input: {
   const { error: formError } = await supabase.from("forms").insert({
     id: formId,
     workspace_id: parsed.data.workspaceId,
-    title: parsed.data.title,
-    description: parsed.data.description || null,
+    title: encrypt(parsed.data.title),
+    description: parsed.data.description ? encrypt(parsed.data.description) : null,
     visibility: parsed.data.visibility,
     created_by: user.id,
   });
@@ -48,9 +49,9 @@ export async function createForm(input: {
   const questions = parsed.data.questions.map((q, index) => ({
     id: crypto.randomUUID(),
     form_id: formId,
-    question_text: q.question_text,
+    question_text: encrypt(q.question_text),
     question_type: q.question_type,
-    options: q.options || [],
+    options: (q.options || []).map((o) => encrypt(o)),
     position: index,
     required: q.required ?? true,
   }));
@@ -107,7 +108,7 @@ export async function submitFormResponse(input: {
       id: crypto.randomUUID(),
       response_id: responseId,
       question_id: a.questionId,
-      answer_value: a.value,
+      answer_value: encrypt(a.value),
     }));
 
   if (answers.length > 0) {
