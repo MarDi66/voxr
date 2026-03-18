@@ -40,7 +40,7 @@ export function SiteHeaderMobileNav({ links }: SiteHeaderMobileNavProps) {
 
       <DialogContent
         showCloseButton={false}
-        className="gap-0 rounded-[1.5rem] border border-[#2A2722] bg-[linear-gradient(180deg,rgba(29,25,21,0.98),rgba(12,11,9,0.98))] p-3 text-[#EAE6DF] ring-0 sm:max-w-none"
+        className="gap-0 rounded-[1.5rem] max-w-none w-[95dvw] border border-[#2A2722] bg-[linear-gradient(180deg,rgba(29,25,21,0.98),rgba(12,11,9,0.98))] p-3 text-[#EAE6DF] ring-0 sm:max-w-none"
       >
         <DialogTitle className="sr-only">Mobile navigation</DialogTitle>
 
