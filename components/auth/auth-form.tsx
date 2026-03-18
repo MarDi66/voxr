@@ -90,7 +90,7 @@ export function AuthForm() {
     return (
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign in to Voxr</CardTitle>
+          <CardTitle className="text-2xl">Sign in or register to Voxr</CardTitle>
           <CardDescription>
             Enter your email to receive a verification code
           </CardDescription>
