@@ -386,7 +386,7 @@ export const solutionPages: ContentPageRecord[] = [
     slug: "employee-suggestion-box-software",
     type: "solution",
     path: "/solutions/employee-suggestion-box-software",
-    title: "Employee Suggestion Box Software That Employees Will Actually Use",
+    title: "Employee Suggestion Box Software for Modern Teams",
     description:
       "See how employee suggestion box software compares with modern anonymous feedback tools and where Voxr fits for private internal feedback.",
     eyebrow: "Solution page",
@@ -608,7 +608,7 @@ export const guidePages: ContentPageRecord[] = [
     slug: "how-to-collect-anonymous-employee-feedback",
     type: "guide",
     path: "/guides/how-to-collect-anonymous-employee-feedback",
-    title: "How to Collect Anonymous Employee Feedback Without Killing Trust",
+    title: "How to Collect Anonymous Employee Feedback Safely",
     description:
       "A practical guide to collecting anonymous employee feedback, setting expectations, and using Voxr to keep the channel safe and useful.",
     eyebrow: "Guide",
