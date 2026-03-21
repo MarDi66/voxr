@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { MessageSquare, Pin, Flag, Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +53,7 @@ export function FeedItemCard({
   slug: string;
   isOwner?: boolean;
 }) {
+  const t = useTranslations("feedback");
   const totalReactions = Object.values(item.reactionCounts).reduce(
     (sum, count) => sum + count,
     0
@@ -75,7 +77,7 @@ export function FeedItemCard({
                 <Pin className="h-4 w-4 shrink-0 text-amber-600" />
               )}
               <CardTitle className={cn("text-base leading-snug", isHidden && "select-none blur-sm")}>
-                {isHidden ? "Hidden content" : item.title}
+                {isHidden ? t("hiddenContentTitle") : item.title}
               </CardTitle>
             </div>
             <div className="flex flex-row-reverse sm:flex-row items-center gap-1">
@@ -92,7 +94,7 @@ export function FeedItemCard({
                     <TooltipTrigger onClick={(e) => e.preventDefault()}>
                       <Info className="h-4 w-4 text-muted-foreground shrink-0" />
                     </TooltipTrigger>
-                    <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
+                    <TooltipContent>{t("hiddenByAdmin")}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               ) : (
@@ -108,7 +110,7 @@ export function FeedItemCard({
         </CardHeader>
         <CardContent>
           <p className={cn("mb-3 line-clamp-2 text-sm text-muted-foreground", isHidden && "select-none blur-sm")}>
-            {isHidden ? "This content has been hidden by a moderator." : item.body}
+            {isHidden ? t("hiddenByModerator") : item.body}
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span>

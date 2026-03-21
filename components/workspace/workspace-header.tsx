@@ -1,9 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/lib/i18n/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
-import { BarChart3, LogOut, Plus, Settings, ChevronDown, Building2, ClipboardList } from "lucide-react";
+import { BarChart3, LogOut, Plus, Settings, ChevronDown, Building2, ClipboardList, Globe, EllipsisVertical } from "lucide-react";
+
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +15,14 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { createClient } from "@/lib/supabase/client";
+import { locales, localeNames, type Locale } from "@/lib/i18n/config";
 import VoxrLogo from "../common/logo";
 
 type Workspace = {
@@ -36,11 +42,26 @@ export function WorkspaceHeader({
   isOwner?: boolean;
 }) {
   const router = useRouter();
+  const locale = useLocale() as Locale;
+  const t = useTranslations("workspace");
+  const tl = useTranslations("localeSwitcher");
+
+  function handleLocaleSwitch(targetLocale: Locale) {
+    if (targetLocale === locale) return;
+    const pathname = window.location.pathname;
+    const segments = pathname.split("/").filter(Boolean);
+    // Non-marketing path — just swap locale prefix
+    const pathSegments = segments.slice(1);
+    const url = pathSegments.length === 0
+      ? `/${targetLocale}`
+      : `/${targetLocale}/${pathSegments.join("/")}`;
+    window.location.assign(url);
+  }
 
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    toast.success("Signed out");
+    toast.success(t("signedOut"));
     router.push("/auth");
     router.refresh();
   }
@@ -62,7 +83,7 @@ export function WorkspaceHeader({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-fit">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("workspaces")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {workspaces.map((ws) => (
                   <DropdownMenuItem key={ws.id} onClick={() => router.push(`/w/${ws.slug}`)}>
@@ -72,7 +93,7 @@ export function WorkspaceHeader({
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/onboarding?manager=true")}>
-                Create or join workspace
+                {t("createOrJoin")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -82,7 +103,7 @@ export function WorkspaceHeader({
           <Link href={`/w/${workspace.slug}/new`}>
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New Feedback</span>
+              <span className="hidden sm:inline">{t("newFeedback")}</span>
             </Button>
           </Link>
 
@@ -96,7 +117,7 @@ export function WorkspaceHeader({
                     </Button>
                   </Link>
                 } />
-                <TooltipContent>New Form</TooltipContent>
+                <TooltipContent>{t("newForm")}</TooltipContent>
               </Tooltip>
             )}
 
@@ -109,29 +130,45 @@ export function WorkspaceHeader({
                     </Button>
                   </Link>
                 } />
-                <TooltipContent>Analytics</TooltipContent>
+                <TooltipContent>{t("analytics")}</TooltipContent>
               </Tooltip>
             )}
 
-            <Tooltip>
-              <TooltipTrigger render={
-                <Link href={`/w/${workspace.slug}/settings`}>
-                  <Button variant="ghost" size="sm">
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>
+                <EllipsisVertical className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-fit">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => router.push(`/w/${workspace.slug}/settings`)}>
                     <Settings className="h-4 w-4" />
-                  </Button>
-                </Link>
-              } />
-              <TooltipContent>Settings</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger render={
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                    {t("settings")}
+                  </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Globe className="h-4 w-4" />
+                      {tl("label")}
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {locales.map((loc) => (
+                        <DropdownMenuItem
+                          key={loc}
+                          onClick={() => handleLocaleSwitch(loc)}
+                          className={loc === locale ? "font-medium" : ""}
+                        >
+                          {localeNames[loc]}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} variant="destructive">
                   <LogOut className="h-4 w-4" />
-                </Button>
-              } />
-              <TooltipContent>Sign out</TooltipContent>
-            </Tooltip>
+                  {t("signOut")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TooltipProvider>
         </div>
       </div>

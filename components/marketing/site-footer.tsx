@@ -1,33 +1,52 @@
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/lib/i18n/navigation";
+import { localizeStaticSlug, localizeDynamicSlug } from "@/lib/i18n/slugs";
+import type { Locale } from "@/lib/i18n/config";
 
-const footerGroups = [
-  {
-    title: "Platform",
-    links: [
-      { href: "/product", label: "Product" },
-      { href: "/features", label: "Features" },
-      { href: "/security", label: "Security & privacy" },
-    ],
-  },
-  {
-    title: "Use cases",
-    links: [
-      { href: "/solutions", label: "Solutions hub" },
-      { href: "/solutions/employee-feedback-platform", label: "Employee feedback platform" },
-      { href: "/solutions/employee-suggestion-box-software", label: "Suggestion box software" },
-    ],
-  },
-  {
-    title: "Learn",
-    links: [
-      { href: "/guides", label: "Guides hub" },
-      { href: "/resources", label: "Resources hub" },
-      { href: "/glossary", label: "Glossary hub" },
-    ],
-  },
-];
+function useFooterGroups() {
+  const t = useTranslations("footer");
+  const tNav = useTranslations("nav");
+  const locale = useLocale() as Locale;
+
+  return [
+    {
+      title: t("platform"),
+      links: [
+        { href: `/${localizeStaticSlug("product", locale)}`, label: tNav("product") },
+        { href: `/${localizeStaticSlug("features", locale)}`, label: tNav("features") },
+        { href: `/${localizeStaticSlug("security", locale)}`, label: t("securityAndPrivacy") },
+      ],
+    },
+    {
+      title: t("useCases"),
+      links: [
+        { href: `/${localizeStaticSlug("solutions", locale)}`, label: t("solutionsHub") },
+        {
+          href: `/${localizeStaticSlug("solutions", locale)}/${localizeDynamicSlug("employee-feedback-platform", locale)}`,
+          label: t("employeeFeedbackPlatform"),
+        },
+        {
+          href: `/${localizeStaticSlug("solutions", locale)}/${localizeDynamicSlug("employee-suggestion-box-software", locale)}`,
+          label: t("suggestionBoxSoftware"),
+        },
+      ],
+    },
+    {
+      title: t("learn"),
+      links: [
+        { href: `/${localizeStaticSlug("guides", locale)}`, label: t("guidesHub") },
+        { href: `/${localizeStaticSlug("resources", locale)}`, label: t("resourcesHub") },
+        { href: `/${localizeStaticSlug("glossary", locale)}`, label: t("glossaryHub") },
+      ],
+    },
+  ];
+}
 
 export function SiteFooter() {
+  const t = useTranslations("footer");
+  const tCommon = useTranslations("common");
+  const footerGroups = useFooterGroups();
+
   return (
     <footer className="border-t border-[#2A2722]">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
@@ -36,15 +55,13 @@ export function SiteFooter() {
             Voxr
           </p>
           <p className="max-w-sm text-sm leading-relaxed text-[#8A857C]">
-            Anonymous internal feedback software for modern teams that want
-            honest input, stronger trust, and a lightweight way to turn feedback
-            into action.
+            {t("tagline")}
           </p>
           <Link
             href="/auth"
-            className="inline-block text-sm font-medium text-[#c45d3e] underline decoration-[#c45d3e]/30 underline-offset-4 transition-colors hover:decoration-[#c45d3e]"
+            className="inline-block text-sm font-medium text-terracotta underline decoration-terracotta/30 underline-offset-4 transition-colors hover:decoration-terracotta"
           >
-            Create a workspace
+            {tCommon("createWorkspace")}
           </Link>
         </div>
 

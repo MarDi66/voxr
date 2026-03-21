@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { MoreHorizontal, Flag, Pin, PinOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,8 @@ export function ItemActions({
   reportCount?: number;
   hasReported?: boolean;
 }) {
+  const t = useTranslations("feedback");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [reportReason, setReportReason] = useState("");
   const [showReportDialog, setShowReportDialog] = useState(false);
@@ -66,7 +69,7 @@ export function ItemActions({
       toast.error(result.error);
       return;
     }
-    toast.success("Report submitted");
+    toast.success(t("reportSubmitted"));
     setReportReason("");
     router.refresh();
   }
@@ -77,7 +80,7 @@ export function ItemActions({
       toast.error(result.error);
       return;
     }
-    toast.success(isFlagged ? "Feedback unpinned" : "Feedback pinned");
+    toast.success(isFlagged ? t("unpinned") : t("pinned"));
     router.refresh();
   }
 
@@ -98,11 +101,11 @@ export function ItemActions({
                   )}
                   onClick={() => {
                     if (isOwn) {
-                      toast.error("You cannot report your own feedback");
+                      toast.error(t("cannotReportOwnFeedback"));
                       return;
                     }
                     if (hasReported) {
-                      toast.error("You have already reported this feedback");
+                      toast.error(t("alreadyReportedFeedback"));
                       return;
                     }
                     setShowReportDialog(true);
@@ -113,7 +116,7 @@ export function ItemActions({
               <Flag className="h-3.5 w-3.5" />
               {reportCount > 0 && <span className="text-xs">{reportCount}</span>}
             </TooltipTrigger>
-            <TooltipContent>Report feedback</TooltipContent>
+            <TooltipContent>{t("reportFeedback")}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -121,19 +124,19 @@ export function ItemActions({
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Report this content</DialogTitle>
+                <DialogTitle>{t("reportThisContent")}</DialogTitle>
                 <DialogDescription>
-                  Help us understand why this content should be reviewed.
+                  {t("reportDescription")}
                 </DialogDescription>
               </DialogHeader>
               <Textarea
-                placeholder="Reason for reporting (optional)"
+                placeholder={t("reportReasonLabel")}
                 value={reportReason}
                 onChange={(e) => setReportReason(e.target.value)}
               />
               <DialogFooter>
-                <Button variant="outline" onClick={() => setShowReportDialog(false)}>Cancel</Button>
-                <Button onClick={() => { handleReport(); setShowReportDialog(false); }}>Submit Report</Button>
+                <Button variant="outline" onClick={() => setShowReportDialog(false)}>{tc("cancel")}</Button>
+                <Button onClick={() => { handleReport(); setShowReportDialog(false); }}>{t("submitReport")}</Button>
               </DialogFooter>
             </DialogContent>
       </Dialog>
@@ -148,12 +151,12 @@ export function ItemActions({
               {isFlagged ? (
                 <>
                   <PinOff className="mr-2 h-4 w-4" />
-                  Unpin
+                  {t("unpin")}
                 </>
               ) : (
                 <>
                   <Pin className="mr-2 h-4 w-4" />
-                  Pin to top
+                  {t("pinToTop")}
                 </>
               )}
             </DropdownMenuItem>

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useId } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, GripVertical } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   closestCenter,
@@ -47,12 +48,12 @@ type Question = {
   required: boolean;
 };
 
-const questionTypeLabels: Record<QuestionType, string> = {
-  short_text: "Short Text",
-  long_text: "Long Text",
-  single_choice: "Single Choice",
-  multiple_choice: "Multiple Choice",
-  rating: "Rating (1-5)",
+const questionTypeKeys: Record<QuestionType, string> = {
+  short_text: "shortText",
+  long_text: "longText",
+  single_choice: "singleChoice",
+  multiple_choice: "multipleChoice",
+  rating: "rating",
 };
 
 let nextQuestionId = 1;
@@ -79,6 +80,7 @@ function SortableQuestionCard({
   updateOption: (qIndex: number, oIndex: number, value: string) => void;
   removeOption: (qIndex: number, oIndex: number) => void;
 }) {
+  const t = useTranslations("forms");
   const {
     attributes,
     listeners,
@@ -111,7 +113,7 @@ function SortableQuestionCard({
               <div className="flex gap-2">
                 <div className="flex-1">
                   <Input
-                    placeholder={`Question ${qIndex + 1}`}
+                    placeholder={t("questionPlaceholder", { number: qIndex + 1 })}
                     value={question.question_text}
                     onChange={(e) =>
                       updateQuestion(qIndex, { question_text: e.target.value })
@@ -136,12 +138,12 @@ function SortableQuestionCard({
                   }}
                 >
                   <SelectTrigger className="w-44">
-                    <SelectValue>{questionTypeLabels[question.question_type]}</SelectValue>
+                    <SelectValue>{t(questionTypeKeys[question.question_type])}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(questionTypeLabels).map(([value, label]) => (
+                    {Object.entries(questionTypeKeys).map(([value, key]) => (
                       <SelectItem key={value} value={value}>
-                        {label}
+                        {t(key)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -154,7 +156,7 @@ function SortableQuestionCard({
                   {question.options.map((option, oIndex) => (
                     <div key={oIndex} className="flex items-center gap-2">
                       <Input
-                        placeholder={`Option ${oIndex + 1}`}
+                        placeholder={t("optionPlaceholder", { number: oIndex + 1 })}
                         value={option}
                         className="flex-1 ml-4"
                         onChange={(e) =>
@@ -181,7 +183,7 @@ function SortableQuestionCard({
                     onClick={() => addOption(qIndex)}
                   >
                     <Plus className="mr-1 h-3.5 w-3.5" />
-                    Add option
+                    {t("addOption")}
                   </Button>
                 </div>
               )}
@@ -212,6 +214,8 @@ export function CreateFormBuilder({
   workspaceId: string;
   slug: string;
 }) {
+  const t = useTranslations("forms");
+  const tc = useTranslations("common");
   const router = useRouter();
   const dndId = useId();
   const [title, setTitle] = useState("");
@@ -279,13 +283,13 @@ export function CreateFormBuilder({
 
   async function handleSubmit() {
     if (!title.trim()) {
-      toast.error("Please enter a form title");
+      toast.error(t("titleError"));
       return;
     }
 
     const emptyQuestion = questions.find((q) => !q.question_text.trim());
     if (emptyQuestion) {
-      toast.error("All questions must have text");
+      toast.error(t("questionError"));
       return;
     }
 
@@ -295,7 +299,7 @@ export function CreateFormBuilder({
         q.options.filter((o) => o.trim()).length < 2
     );
     if (choiceWithoutOptions) {
-      toast.error("Choice questions must have at least 2 options");
+      toast.error(t("optionsError"));
       return;
     }
 
@@ -320,7 +324,7 @@ export function CreateFormBuilder({
       return;
     }
 
-    toast.success("Form created!");
+    toast.success(t("formCreated"));
     router.push(`/w/${slug}`);
   }
 
@@ -328,38 +332,38 @@ export function CreateFormBuilder({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Create a Form</CardTitle>
+          <CardTitle>{t("createTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t("titleLabel")}</Label>
             <Input
               id="title"
-              placeholder="What would you like to ask?"
+              placeholder={t("titleInputPlaceholder")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">{t("descriptionLabel")}</Label>
             <Textarea
               id="description"
-              placeholder="Add context about this form..."
+              placeholder={t("descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Answers Visibility</Label>
+            <Label>{t("visibilityLabel")}</Label>
             <Select value={visibility} onValueChange={(v) => { if (v) setVisibility(v as "public" | "private"); }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="w-fit">
-                <SelectItem value="public">Public — everyone can see results</SelectItem>
-                <SelectItem value="private">Private — only you can see results</SelectItem>
+                <SelectItem value="public">{t("visibilityPublic")}</SelectItem>
+                <SelectItem value="private">{t("visibilityPrivate")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -396,18 +400,18 @@ export function CreateFormBuilder({
 
       <Button type="button" variant="outline" className="w-full" onClick={addQuestion}>
         <Plus className="mr-2 h-4 w-4" />
-        Add Question
+        {t("addQuestion")}
       </Button>
 
       <Separator />
 
       <div className="flex gap-2">
         <Button variant="outline" onClick={() => router.back()}>
-          Cancel
+          {tc("cancel")}
         </Button>
         <Button onClick={handleSubmit} disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Publish Form
+          {t("publishForm")}
         </Button>
       </div>
     </div>

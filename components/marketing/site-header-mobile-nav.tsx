@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/lib/i18n/navigation";
 import { ArrowRight, Menu } from "lucide-react";
 import {
   Dialog,
@@ -9,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { LocaleSwitcher } from "@/components/marketing/locale-switcher";
 
 type SiteHeaderMobileNavProps = {
   links: Array<{
@@ -19,6 +21,7 @@ type SiteHeaderMobileNavProps = {
 
 export function SiteHeaderMobileNav({ links }: SiteHeaderMobileNavProps) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("nav");
 
   const handleNavigate = () => {
     setOpen(false);
@@ -35,18 +38,18 @@ export function SiteHeaderMobileNav({ links }: SiteHeaderMobileNavProps) {
         }
       >
         <Menu className="h-4 w-4" />
-        Menu
+        {t("menu")}
       </DialogTrigger>
 
       <DialogContent
         showCloseButton={false}
         className="gap-0 rounded-[1.5rem] max-w-none w-[95dvw] border border-[#2A2722] bg-[linear-gradient(180deg,rgba(29,25,21,0.98),rgba(12,11,9,0.98))] p-3 text-[#EAE6DF] ring-0 sm:max-w-none"
       >
-        <DialogTitle className="sr-only">Mobile navigation</DialogTitle>
+        <DialogTitle className="sr-only">{t("mobileMenuTitle")}</DialogTitle>
 
         <div>
           <div className="px-3 pb-2 pt-1 text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-[#8A857C]">
-            Navigate
+            {t("navigate")}
           </div>
 
           <nav aria-label="Mobile primary" className="flex flex-col">
@@ -63,19 +66,22 @@ export function SiteHeaderMobileNav({ links }: SiteHeaderMobileNavProps) {
           </nav>
 
           <div className="mt-2 flex flex-col gap-2 border-t border-[#2A2722] px-2 pb-2 pt-3">
+            <div className="flex items-center justify-between px-3 py-2">
+              <LocaleSwitcher />
+            </div>
             <Link
               href="/auth"
               onClick={handleNavigate}
               className="rounded-xl px-3 py-3 text-sm text-[#C4BEB5] transition-colors hover:bg-[#1B1713] hover:text-[#EAE6DF]"
             >
-              Sign in
+              {t("signIn")}
             </Link>
             <Link
               href="/auth"
               onClick={handleNavigate}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#c45d3e] px-4 py-3 text-sm font-medium text-white shadow-sm shadow-[#c45d3e]/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-[#c45d3e]/25"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-terracotta px-4 py-3 text-sm font-medium text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
             >
-              Start with Voxr
+              {t("getStarted")}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

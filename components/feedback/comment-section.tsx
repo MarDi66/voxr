@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Loader2, Flag, Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -63,6 +64,8 @@ function CommentItem({
 }: {
   comment: Comment;
 }) {
+  const t = useTranslations("feedback");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -81,7 +84,7 @@ function CommentItem({
       toast.error(result.error);
       return;
     }
-    toast.success("Report submitted");
+    toast.success(t("reportSubmitted"));
     setReportReason("");
     setShowReportDialog(false);
     router.refresh();
@@ -104,7 +107,7 @@ function CommentItem({
               <span className="text-xs font-medium block">{comment.anonymousName}</span>
               {comment.is_item_author && (
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
-                  Author
+                  {t("author")}
                 </Badge>
               )}
             </div>
@@ -120,7 +123,7 @@ function CommentItem({
                   <TooltipTrigger>
                     <Info className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
-                  <TooltipContent>This content has been reported by users and hidden by an admin.</TooltipContent>
+                  <TooltipContent>{t("hiddenByAdmin")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -139,11 +142,11 @@ function CommentItem({
                         )}
                         onClick={() => {
                           if (comment.is_own) {
-                            toast.error("You cannot report your own comment");
+                            toast.error(t("cannotReportOwnComment"));
                             return;
                           }
                           if (comment.hasReported) {
-                            toast.error("You have already reported this comment");
+                            toast.error(t("alreadyReportedComment"));
                             return;
                           }
                           setShowReportDialog(true);
@@ -154,7 +157,7 @@ function CommentItem({
                     <Flag className="h-3.5 w-3.5" />
                     {comment.reportCount > 0 && <span className="text-xs">{comment.reportCount}</span>}
                   </TooltipTrigger>
-                  <TooltipContent>Report comment</TooltipContent>
+                  <TooltipContent>{t("reportComment")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -162,7 +165,7 @@ function CommentItem({
       </div>
       <div className="flex items-start justify-between gap-2">
         <p className={`text-sm mt-2 ${isHidden ? "select-none blur-sm pl-3 pb-2" : ""}`}>
-          {isHidden ? "This comment has been hidden by a moderator." : comment.body}
+          {isHidden ? t("hiddenByModerator") : comment.body}
         </p>
       </div>
 
@@ -179,23 +182,23 @@ function CommentItem({
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Report this comment</DialogTitle>
+            <DialogTitle>{t("reportThisComment")}</DialogTitle>
             <DialogDescription>
-              Help us understand why this comment should be reviewed.
+              {t("reportDescription")}
             </DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Reason for reporting (optional)"
+            placeholder={t("reportReasonLabel")}
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowReportDialog(false)}>
-              Cancel
+              {tc("cancel")}
             </Button>
             <Button onClick={handleReport} disabled={isReporting}>
               {isReporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Submit Report
+              {t("submitReport")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -215,6 +218,7 @@ export function CommentSection({
   comments: Comment[];
   isItemHidden?: boolean;
 }) {
+  const t = useTranslations("feedback");
   const router = useRouter();
   const form = useForm<CreateCommentInput>({
     resolver: zodResolver(createCommentSchema),
@@ -231,7 +235,7 @@ export function CommentSection({
       toast.error(result.error);
       return;
     }
-    toast.success("Comment added");
+    toast.success(t("commentAdded"));
     form.reset();
     router.refresh();
   }
@@ -263,7 +267,7 @@ export function CommentSection({
                   <FormItem>
                     <FormControl>
                       <Textarea
-                        placeholder="Write a comment..."
+                        placeholder={t("commentPlaceholder")}
                         className="min-h-20"
                         {...field}
                       />
@@ -280,7 +284,7 @@ export function CommentSection({
                 {form.formState.isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Comment
+                {t("commentButton")}
               </Button>
             </form>
           </Form>

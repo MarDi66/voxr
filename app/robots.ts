@@ -1,18 +1,15 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl, getBaseUrl } from "@/lib/site-config";
+import { locales } from "@/lib/i18n/config";
 
-const disallowPaths = [
-  "/auth",
-  "/auth/",
-  "/onboarding",
-  "/onboarding/",
-  "/w",
-  "/w/",
-  "/app",
-  "/app/",
-  "/dashboard",
-  "/dashboard/",
-];
+const privateRoutes = ["auth", "onboarding", "w", "app", "dashboard"];
+
+const disallowPaths = locales.flatMap((locale) =>
+  privateRoutes.flatMap((route) => [
+    `/${locale}/${route}`,
+    `/${locale}/${route}/`,
+  ])
+);
 
 export default function robots(): MetadataRoute.Robots {
   return {

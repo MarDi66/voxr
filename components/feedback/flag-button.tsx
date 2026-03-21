@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Pin, PinOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { toggleFlagItem } from "@/actions/feedback";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ export function FlagButton({
   workspaceId: string;
   isFlagged: boolean;
 }) {
+  const t = useTranslations("feedback");
   const router = useRouter();
 
   async function handleToggle(e: React.MouseEvent) {
@@ -27,7 +29,7 @@ export function FlagButton({
       toast.error(result.error);
       return;
     }
-    toast.success(isFlagged ? "Feedback unpinned" : "Feedback pinned");
+    toast.success(isFlagged ? t("unpinned") : t("pinned"));
     router.refresh();
   }
 
@@ -37,7 +39,7 @@ export function FlagButton({
       size="sm"
       className="h-7 w-7 p-0"
       onClick={handleToggle}
-      title={isFlagged ? "Unpin feedback" : "Pin feedback"}
+      title={isFlagged ? t("unpinFeedback") : t("pinFeedback")}
     >
       {isFlagged ? (
         <PinOff className="h-4 w-4 text-amber-600" />

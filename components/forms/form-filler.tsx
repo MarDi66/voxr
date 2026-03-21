@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -41,6 +42,8 @@ export function FormFiller({
   slug: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("forms");
+  const tc = useTranslations("common");
   const [currentIndex, setCurrentIndex] = useState(-1); // -1 = intro screen
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +67,7 @@ export function FormFiller({
     if (currentQuestion) {
       const answer = answers[currentQuestion.id] || "";
       if (currentQuestion.required && !answer.trim()) {
-        toast.error("This question requires an answer");
+        toast.error(t("required"));
         return;
       }
     }
@@ -81,7 +84,7 @@ export function FormFiller({
     for (const q of questions) {
       const answer = answers[q.id] || "";
       if (q.required && !answer.trim()) {
-        toast.error(`Please answer: "${q.question_text}"`);
+        toast.error(t("pleaseAnswer", { question: q.question_text }));
         setCurrentIndex(q.position);
         return;
       }
@@ -127,12 +130,12 @@ export function FormFiller({
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold">Thank you!</h2>
+            <h2 className="text-2xl font-bold">{t("thankYou")}</h2>
             <p className="text-muted-foreground">
-              Your response has been recorded anonymously.
+              {t("responseRecorded")}
             </p>
             <Button onClick={() => router.push(`/w/${slug}`)}>
-              Back to feed
+              {t("backToFeed")}
             </Button>
           </CardContent>
         </Card>
@@ -161,10 +164,10 @@ export function FormFiller({
                 <p className="text-muted-foreground">{formDescription}</p>
               )}
               <p className="text-sm text-muted-foreground">
-                {questions.length} question{questions.length !== 1 && "s"} · Anonymous responses
+                {t("questionCount", { count: questions.length })}
               </p>
               <Button size="lg" onClick={handleNext} className="mt-4 gap-2">
-                Start
+                {t("start")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </CardContent>
@@ -172,14 +175,14 @@ export function FormFiller({
         ) : isComplete ? (
           <Card className="w-full">
             <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-              <h2 className="text-2xl font-bold">All done!</h2>
+              <h2 className="text-2xl font-bold">{t("allDone")}</h2>
               <p className="text-muted-foreground">
-                Review your answers or submit your response.
+                {t("reviewMessage")}
               </p>
               <div className="mt-4 flex gap-2">
                 <Button size="lg" variant="outline" onClick={handleBack}>
                   <ChevronLeft className="mr-1 h-4 w-4" />
-                  Back
+                  {tc("back")}
                 </Button>
                 <Button
                   size="lg"
@@ -189,7 +192,7 @@ export function FormFiller({
                   {isSubmitting && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Submit Response
+                  {t("submitResponse")}
                 </Button>
               </div>
             </CardContent>
@@ -198,7 +201,7 @@ export function FormFiller({
           <div className="w-full space-y-6">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                {currentIndex + 1} of {questions.length}
+                {t("questionProgress", { current: currentIndex + 1, total: questions.length })}
                 {currentQuestion.required && " *"}
               </p>
               <h2 className="text-2xl font-bold">
@@ -215,10 +218,10 @@ export function FormFiller({
             <div className="flex items-center justify-between pt-4">
               <Button variant="ghost" onClick={handleBack}>
                 <ChevronLeft className="mr-1 h-4 w-4" />
-                Back
+                {tc("back")}
               </Button>
               <Button onClick={handleNext}>
-                {currentIndex === questions.length - 1 ? "Review" : "Next"}
+                {currentIndex === questions.length - 1 ? t("review") : t("next")}
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
@@ -238,11 +241,13 @@ function QuestionInput({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations("forms");
+
   switch (question.question_type) {
     case "short_text":
       return (
         <Input
-          placeholder="Type your answer..."
+          placeholder={t("typeAnswer")}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoFocus
@@ -253,7 +258,7 @@ function QuestionInput({
     case "long_text":
       return (
         <Textarea
-          placeholder="Type your answer..."
+          placeholder={t("typeAnswer")}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoFocus

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { ChevronRight } from "lucide-react";
 
 type BreadcrumbItem = {
@@ -22,7 +22,7 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
               ) : (
                 <Link
                   href={item.href}
-                  className="transition-colors hover:text-[#c45d3e]"
+                  className="transition-colors hover:text-terracotta"
                 >
                   {item.label}
                 </Link>

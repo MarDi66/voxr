@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Crown, UserMinus, ArrowRightLeft, Shield, ShieldPlus, ShieldMinus, MoreHorizontal } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -53,6 +55,8 @@ export function MembersTab({
   workspaceId: string;
   role: string;
 }) {
+  const t = useTranslations("workspace");
+  const tc = useTranslations("common");
   const isOwnerOrAdmin = currentRole === "owner" || currentRole === "admin";
   const isOwner = currentRole === "owner";
   const [members, setMembers] = useState<Member[]>([]);
@@ -98,7 +102,7 @@ export function MembersTab({
       toast.error(result.error);
       return;
     }
-    toast.success("Member removed");
+    toast.success(t("memberRemoved"));
     fetchMembers();
   }
 
@@ -108,7 +112,7 @@ export function MembersTab({
       toast.error(result.error);
       return;
     }
-    toast.success("Ownership transferred");
+    toast.success(t("ownershipTransferred"));
     window.location.reload();
   }
 
@@ -118,7 +122,7 @@ export function MembersTab({
       toast.error(result.error);
       return;
     }
-    toast.success(`Role changed to ${newRole}`);
+    toast.success(t("roleChanged", { role: newRole }));
     fetchMembers();
   }
 
@@ -132,20 +136,20 @@ export function MembersTab({
     <>
     <Card>
       <CardHeader>
-        <CardTitle>Members</CardTitle>
+        <CardTitle>{t("members")}</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{tc("loading")}</p>
         ) : members.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No members</p>
+          <p className="text-sm text-muted-foreground">{t("noMembers")}</p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Joined</TableHead>
+                <TableHead>{t("emailColumn")}</TableHead>
+                <TableHead>{t("roleColumn")}</TableHead>
+                <TableHead>{t("joinedColumn")}</TableHead>
                 {isOwnerOrAdmin && <TableHead></TableHead>}
               </TableRow>
             </TableHeader>
@@ -166,7 +170,7 @@ export function MembersTab({
                         {member.email}
                         {isCurrentUser && (
                           <Badge variant="outline" className="text-xs">
-                            You
+                            {t("you")}
                           </Badge>
                         )}
                       </div>
@@ -200,13 +204,13 @@ export function MembersTab({
                                 {isMemberAdmin && isOwner && (
                                   <DropdownMenuItem onClick={() => handleRoleChange(member.user_id, "member")}>
                                     <ShieldMinus className="h-4 w-4" />
-                                    Demote to member
+                                    {t("demoteToMember")}
                                   </DropdownMenuItem>
                                 )}
                                 {!isMemberAdmin && (
                                   <DropdownMenuItem onClick={() => handleRoleChange(member.user_id, "admin")}>
                                     <ShieldPlus className="h-4 w-4" />
-                                    Promote to admin
+                                    {t("promoteToAdmin")}
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuGroup>
@@ -214,10 +218,10 @@ export function MembersTab({
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuGroup>
-                                    <DropdownMenuLabel>Ownership</DropdownMenuLabel>
+                                    <DropdownMenuLabel>{t("ownership")}</DropdownMenuLabel>
                                     <DropdownMenuItem onClick={() => setConfirmAction({ type: "transfer", userId: member.user_id, email: member.email })}>
                                       <ArrowRightLeft className="h-4 w-4" />
-                                      Transfer ownership
+                                      {t("transferOwnership")}
                                     </DropdownMenuItem>
                                   </DropdownMenuGroup>
                                 </>
@@ -228,7 +232,7 @@ export function MembersTab({
                                 onClick={() => setConfirmAction({ type: "remove", userId: member.user_id, email: member.email })}
                               >
                                 <UserMinus className="h-4 w-4" />
-                                Remove from workspace
+                                {t("removeFromWorkspace")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -250,17 +254,15 @@ export function MembersTab({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Transfer ownership?</AlertDialogTitle>
+          <AlertDialogTitle>{t("transferConfirmTitle")}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will make {confirmAction?.email} the workspace owner and you
-            will become a regular member. This action cannot be undone without
-            the new owner&apos;s consent.
+            {t("transferConfirmDescription", { email: confirmAction?.email ?? "" })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
           <AlertDialogAction onClick={() => { if (confirmAction) handleTransfer(confirmAction.userId); }}>
-            Transfer
+            {t("transfer")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -272,16 +274,15 @@ export function MembersTab({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove member?</AlertDialogTitle>
+          <AlertDialogTitle>{t("removeConfirmTitle")}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will remove {confirmAction?.email} from the workspace. They
-            will need a new invite to rejoin.
+            {t("removeConfirmDescription", { email: confirmAction?.email ?? "" })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
           <AlertDialogAction onClick={() => { if (confirmAction) handleRemove(confirmAction.userId); }}>
-            Remove
+            {t("remove")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -16,6 +16,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   ChartConfig,
@@ -65,35 +67,6 @@ type AnalyticsData = {
   topEmojis: { emoji: string; count: number }[];
 };
 
-const categoryConfig = {
-  count: { label: "Count" },
-  idea: { label: "Ideas", color: "var(--color-chart-1)" },
-  concern: { label: "Concerns", color: "var(--color-chart-2)" },
-  praise: { label: "Praise", color: "var(--color-chart-3)" },
-  question: { label: "Questions", color: "var(--color-chart-4)" },
-} satisfies ChartConfig;
-
-const wellbeingTrendConfig = {
-  score: { label: "Wellbeing Score", color: "var(--color-chart-3)" },
-} satisfies ChartConfig;
-
-const activityConfig = {
-  feedback: { label: "Feedback", color: "var(--color-chart-1)" },
-  comments: { label: "Comments", color: "var(--color-chart-2)" },
-  reactions: { label: "Reactions", color: "var(--color-chart-3)" },
-} satisfies ChartConfig;
-
-const wellbeingConfig = {
-  score: { label: "Wellbeing", color: "var(--color-chart-3)" },
-} satisfies ChartConfig;
-
-const moodConfig = {
-  value: { label: "Reactions" },
-  positive: { label: "Positive", color: "var(--color-chart-3)" },
-  neutral: { label: "Neutral", color: "var(--color-chart-4)" },
-  negative: { label: "Negative", color: "var(--color-chart-2)" },
-} satisfies ChartConfig;
-
 const CATEGORY_COLORS = [
   "var(--color-chart-1)",
   "var(--color-chart-2)",
@@ -101,19 +74,50 @@ const CATEGORY_COLORS = [
   "var(--color-chart-4)",
 ];
 
-function WellbeingLabel({ score }: { score: number }) {
-  if (score >= 70) return "Positive";
-  if (score >= 40) return "Neutral";
-  return "Needs attention";
-}
-
-function SafetyLabel({ score }: { score: number }) {
-  if (score >= 75) return "Strong";
-  if (score >= 50) return "Moderate";
-  return "Low";
-}
-
 export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
+  const t = useTranslations("analytics");
+
+  const categoryConfig = useMemo(() => ({
+    count: { label: t("count") },
+    idea: { label: t("ideas"), color: "var(--color-chart-1)" },
+    concern: { label: t("concerns"), color: "var(--color-chart-2)" },
+    praise: { label: t("praise"), color: "var(--color-chart-3)" },
+    question: { label: t("questions"), color: "var(--color-chart-4)" },
+  }) satisfies ChartConfig, [t]);
+
+  const wellbeingTrendConfig = useMemo(() => ({
+    score: { label: t("wellbeingScore"), color: "var(--color-chart-3)" },
+  }) satisfies ChartConfig, [t]);
+
+  const activityConfig = useMemo(() => ({
+    feedback: { label: t("feedback"), color: "var(--color-chart-1)" },
+    comments: { label: t("comments"), color: "var(--color-chart-2)" },
+    reactions: { label: t("reactions"), color: "var(--color-chart-3)" },
+  }) satisfies ChartConfig, [t]);
+
+  const wellbeingConfig = useMemo(() => ({
+    score: { label: t("wellbeing"), color: "var(--color-chart-3)" },
+  }) satisfies ChartConfig, [t]);
+
+  const moodConfig = useMemo(() => ({
+    value: { label: t("reactions") },
+    positive: { label: t("positive"), color: "var(--color-chart-3)" },
+    neutral: { label: t("neutral"), color: "var(--color-chart-4)" },
+    negative: { label: t("negative"), color: "var(--color-chart-2)" },
+  }) satisfies ChartConfig, [t]);
+
+  function getWellbeingLabel(score: number) {
+    if (score >= 70) return t("positive");
+    if (score >= 40) return t("neutral");
+    return t("needsAttention");
+  }
+
+  function getSafetyLabel(score: number) {
+    if (score >= 75) return t("strong");
+    if (score >= 50) return t("moderate");
+    return t("low");
+  }
+
   const moodData = [
     { name: "positive", value: data.reactionMood.positive, fill: "var(--color-chart-3)" },
     { name: "neutral", value: data.reactionMood.neutral, fill: "var(--color-chart-4)" },
@@ -134,39 +138,39 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
   return (
     <div className="space-y-6">
-      {/* KPI Cards — Wellbeing focused */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Team Members</CardDescription>
+            <CardDescription>{t("teamMembers")}</CardDescription>
             <CardTitle className="text-3xl">{data.team.activeMembers}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Response Rate</CardDescription>
+            <CardDescription>{t("responseRate")}</CardDescription>
             <CardTitle className="text-3xl">{data.responseRate}%</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Feedback items that received a reply
+              {t("responseRateDescription")}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Psychological Safety</CardDescription>
+            <CardDescription>{t("psychologicalSafety")}</CardDescription>
             <CardTitle className="text-3xl">{data.psychologicalSafety}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              <SafetyLabel score={data.psychologicalSafety} /> — category diversity &amp; concern expression
+              {t("safetyDescription", { label: getSafetyLabel(data.psychologicalSafety) })}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Feedback</CardDescription>
+            <CardDescription>{t("totalFeedback")}</CardDescription>
             <CardTitle className="text-3xl">{data.engagement.totalFeedback}</CardTitle>
           </CardHeader>
         </Card>
@@ -176,9 +180,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Wellbeing Score</CardTitle>
+            <CardTitle>{t("wellbeingScore")}</CardTitle>
             <CardDescription>
-              Composite of feedback sentiment, reactions mood, and response rate — <WellbeingLabel score={data.wellbeingScore} />
+              {t("wellbeingScoreDescription", { label: getWellbeingLabel(data.wellbeingScore) })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -216,9 +220,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reaction Mood</CardTitle>
+            <CardTitle>{t("reactionMood")}</CardTitle>
             <CardDescription>
-              Emotional tone of emoji reactions across the workspace
+              {t("reactionMoodDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -243,9 +247,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
       {/* Wellbeing Trend Over Time */}
       <Card>
         <CardHeader>
-          <CardTitle>Wellbeing Trend</CardTitle>
+          <CardTitle>{t("wellbeingTrend")}</CardTitle>
           <CardDescription>
-            Weekly wellbeing score over the last 12 weeks
+            {t("wellbeingTrendDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -276,9 +280,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
       {/* Activity Over Time */}
       <Card>
         <CardHeader>
-          <CardTitle>Engagement Activity</CardTitle>
+          <CardTitle>{t("engagementActivity")}</CardTitle>
           <CardDescription>
-            Weekly feedback, comments, and reactions over the last 12 weeks
+            {t("engagementActivityDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -301,9 +305,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Feedback Categories</CardTitle>
+            <CardTitle>{t("feedbackCategories")}</CardTitle>
             <CardDescription>
-              Volume breakdown by category
+              {t("feedbackCategoriesDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -325,9 +329,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Reactions</CardTitle>
+            <CardTitle>{t("topReactions")}</CardTitle>
             <CardDescription>
-              Most used emoji reactions across the workspace
+              {t("topReactionsDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -352,7 +356,7 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
               </div>
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No reactions yet
+                {t("noReactionsYet")}
               </p>
             )}
           </CardContent>

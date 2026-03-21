@@ -2,9 +2,11 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +23,7 @@ import { joinWorkspaceSchema, type JoinWorkspaceInput } from "@/lib/validators/w
 import { consumeInvite } from "@/actions/workspaces";
 
 export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName, invitedRole }: { defaultToken?: string; invitedWorkspaceName?: string | null; invitedRole?: string }) {
+  const t = useTranslations("workspace");
   const router = useRouter();
   const form = useForm<JoinWorkspaceInput>({
     resolver: zodResolver(joinWorkspaceSchema),
@@ -33,7 +36,7 @@ export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName, invitedR
       toast.error(result.error);
       return;
     }
-    toast.success("Joined workspace!");
+    toast.success(t("joinedWorkspace"));
     router.push(`/w/${result.slug}`);
   }
 
@@ -42,13 +45,13 @@ export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName, invitedR
       <CardHeader>
         <CardTitle>
           {invitedWorkspaceName
-            ? `Join ${invitedWorkspaceName}`
-            : "Join a workspace"}
+            ? t("joinTitle", { name: invitedWorkspaceName })
+            : t("joinTitleDefault")}
         </CardTitle>
         <CardDescription>
           {invitedWorkspaceName
-            ? `You've been invited to join ${invitedWorkspaceName} as ${invitedRole}`
-            : "Enter an invite token to join an existing workspace"}
+            ? t("joinDescriptionInvited", { name: invitedWorkspaceName, role: invitedRole ?? "" })
+            : t("joinDescriptionDefault")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -59,10 +62,10 @@ export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName, invitedR
               name="inviteToken"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Invite Token</FormLabel>
+                  <FormLabel>{t("inviteTokenLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Paste your invite token or link"
+                      placeholder={t("inviteTokenPlaceholder")}
                       {...field}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -92,7 +95,7 @@ export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName, invitedR
               {form.formState.isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Join Workspace
+              {t("joinButton")}
             </Button>
           </form>
         </Form>

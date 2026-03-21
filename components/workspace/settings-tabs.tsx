@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorkspaceSettingsTab } from "./workspace-settings-tab";
 import { MembersTab } from "./members-tab";
@@ -19,16 +20,17 @@ export function SettingsTabs({
   workspace: Workspace;
   role: string;
 }) {
+  const t = useTranslations("workspace");
   const isOwner = role === "owner";
   const isOwnerOrAdmin = role === "owner" || role === "admin";
 
   return (
     <Tabs defaultValue="workspace">
       <TabsList>
-        <TabsTrigger value="workspace">Workspace</TabsTrigger>
-        <TabsTrigger value="members">Members</TabsTrigger>
-        {isOwnerOrAdmin && <TabsTrigger value="invites">Invites</TabsTrigger>}
-        {isOwnerOrAdmin && <TabsTrigger value="moderation">Moderation</TabsTrigger>}
+        <TabsTrigger value="workspace">{t("tabWorkspace")}</TabsTrigger>
+        <TabsTrigger value="members">{t("tabMembers")}</TabsTrigger>
+        {isOwnerOrAdmin && <TabsTrigger value="invites">{t("tabInvites")}</TabsTrigger>}
+        {isOwnerOrAdmin && <TabsTrigger value="moderation">{t("tabModeration")}</TabsTrigger>}
       </TabsList>
 
       <TabsContent value="workspace" className="mt-4">

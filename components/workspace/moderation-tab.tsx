@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Eye, EyeOff, ExternalLink, TriangleAlertIcon, CheckIcon } from "lucide-react";
 
@@ -75,6 +76,8 @@ type HiddenComment = {
 };
 
 export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug: string }) {
+  const t = useTranslations("workspace");
+  const tc = useTranslations("common");
   const [reports, setReports] = useState<Report[]>([]);
   const [hiddenItems, setHiddenItems] = useState<HiddenItem[]>([]);
   const [hiddenComments, setHiddenComments] = useState<HiddenComment[]>([]);
@@ -141,7 +144,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
       toast.error(result.error);
       return;
     }
-    toast.success(action === "resolved" ? "Report resolved" : "Report dismissed");
+    toast.success(action === "resolved" ? t("reportResolved") : t("reportDismissed"));
     fetchData();
   }
 
@@ -151,7 +154,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
       toast.error(result.error);
       return;
     }
-    toast.success("Feedback restored");
+    toast.success(t("feedbackRestored"));
     fetchData();
   }
 
@@ -161,7 +164,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
       toast.error(result.error);
       return;
     }
-    toast.success("Comment restored");
+    toast.success(t("commentRestored"));
     fetchData();
   }
 
@@ -172,20 +175,20 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
     <Tabs defaultValue="reports">
       <TabsList>
         <TabsTrigger value="reports">
-          Reports {pendingReports.length > 0 && `(${pendingReports.length})`}
+          {t("reports")} {pendingReports.length > 0 && `(${pendingReports.length})`}
         </TabsTrigger>
         <TabsTrigger value="hidden">
-          Hidden Content {hiddenCount > 0 && `(${hiddenCount})`}
+          {t("hiddenContentTab")} {hiddenCount > 0 && `(${hiddenCount})`}
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="reports" className="mt-4 space-y-4">
         {loading ? (
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{tc("loading")}</p>
         ) : pendingReports.length === 0 ? (
           <Card>
             <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              No pending reports
+              {t("noPendingReports")}
             </CardContent>
           </Card>
         ) : (
@@ -203,17 +206,17 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                     <AlertDialog>
                       <AlertDialogTrigger render={<Button variant="ghost" size="sm" className="bg-amber-500/10" />}>
                         <EyeOff className="mr-1 h-4 w-4" />
-                        Hide Content
+                        {t("hideContent")}
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Hide this content?</AlertDialogTitle>
+                          <AlertDialogTitle>{t("hideConfirmTitle")}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will hide the reported {report.target_type === "item" ? "feedback" : "comment"} from all workspace members.
+                            {report.target_type === "item" ? t("hideConfirmFeedback") : t("hideConfirmComment")}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={async () => {
                               if (report.target_type === "item") {
@@ -230,11 +233,11 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                                 toast.error(result.error);
                                 return;
                               }
-                              toast.success("Report resolved");
+                              toast.success(t("reportResolved"));
                               fetchData();
                             }}
                           >
-                            Hide & Resolve
+                            {t("hideAndResolve")}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -246,7 +249,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                       className="bg-green-500/10 dark:bg-green-500/10"
                     >
                       <CheckIcon className="mr-1 h-4 w-4" />
-                      Dismiss
+                      {t("dismiss")}
                     </Button>
                   </div>
                 </div>
@@ -263,7 +266,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground italic">
-                    No reason provided
+                    {t("noReasonProvided")}
                   </p>
                 )}
               </CardContent>
@@ -277,7 +280,7 @@ export function ModerationTab({ workspaceId, slug }: { workspaceId: string; slug
         {hiddenCount === 0 ? (
           <Card>
             <CardContent className="py-6 text-center text-sm text-muted-foreground">
-              No hidden content
+              {t("noHiddenContent")}
             </CardContent>
           </Card>
         ) : (
@@ -322,6 +325,7 @@ function HiddenItemCard({
   slug: string;
   onUnhide: () => void;
 }) {
+  const t = useTranslations("workspace");
   const [revealed, setRevealed] = useState(false);
 
   return (
@@ -329,7 +333,7 @@ function HiddenItemCard({
       <CardContent className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Badge variant="outline">feedback</Badge>
+            <Badge variant="outline">{t("feedbackType")}</Badge>
             <Badge variant="secondary">{item.category}</Badge>
           </div>
           <div className="flex items-center gap-1">
@@ -339,9 +343,9 @@ function HiddenItemCard({
               onClick={() => setRevealed(!revealed)}
             >
               {revealed ? (
-                <><EyeOff className="mr-1 h-4 w-4" />Blur</>
+                <><EyeOff className="mr-1 h-4 w-4" />{t("blur")}</>
               ) : (
-                <><Eye className="mr-1 h-4 w-4" />Reveal</>
+                <><Eye className="mr-1 h-4 w-4" />{t("reveal")}</>
               )}
             </Button>
             <Link
@@ -349,7 +353,7 @@ function HiddenItemCard({
               className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
               <ExternalLink className="mr-1 h-4 w-4" />
-              Go to Feedback
+              {t("goToFeedback")}
             </Link>
             <Button
               variant="outline"
@@ -358,7 +362,7 @@ function HiddenItemCard({
               className="bg-amber-500/15 dark:bg-amber-500/15"
             >
               <TriangleAlertIcon className="mr-1 h-4 w-4" />
-              Unhide
+              {t("unhide")}
             </Button>
           </div>
         </div>
@@ -378,13 +382,14 @@ function HiddenCommentCard({
   slug: string;
   onUnhide: () => void;
 }) {
+  const t = useTranslations("workspace");
   const [revealed, setRevealed] = useState(false);
 
   return (
     <Card>
       <CardContent className="space-y-2">
         <div className="flex items-center justify-between">
-          <Badge variant="outline">comment</Badge>
+          <Badge variant="outline">{t("commentType")}</Badge>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -392,9 +397,9 @@ function HiddenCommentCard({
               onClick={() => setRevealed(!revealed)}
             >
               {revealed ? (
-                <><EyeOff className="mr-1 h-4 w-4" />Blur</>
+                <><EyeOff className="mr-1 h-4 w-4" />{t("blur")}</>
               ) : (
-                <><Eye className="mr-1 h-4 w-4" />Reveal</>
+                <><Eye className="mr-1 h-4 w-4" />{t("reveal")}</>
               )}
             </Button>
             <Link
@@ -402,7 +407,7 @@ function HiddenCommentCard({
               className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
               <ExternalLink className="mr-1 h-4 w-4" />
-              Go to Feedback
+              {t("goToFeedback")}
             </Link>
             <Button
               variant="outline"
@@ -411,7 +416,7 @@ function HiddenCommentCard({
               className="bg-amber-500/15 dark:bg-amber-500/15"
             >
               <TriangleAlertIcon className="mr-1 h-4 w-4" />
-              Unhide
+              {t("unhide")}
             </Button>
           </div>
         </div>
@@ -422,13 +427,15 @@ function HiddenCommentCard({
 }
 
 function ReportPreview({ report, slug }: { report: Report; slug: string }) {
+  const t = useTranslations("workspace");
+  const tc = useTranslations("common");
   const preview = report.target_preview;
   const itemId = getItemIdForReport(report);
 
   if (!preview) {
     return (
       <p className="text-sm text-muted-foreground italic">
-        Content no longer available
+        {t("contentUnavailable")}
       </p>
     );
   }
@@ -461,17 +468,17 @@ function ReportPreview({ report, slug }: { report: Report; slug: string }) {
           <DrawerTrigger asChild>
             <Button variant="secondary" size="sm">
               <Eye className="h-4 w-4 mr-1" />
-              Preview
+              {t("preview")}
             </Button>
           </DrawerTrigger>
           <DrawerContent className="max-w-4xl mx-auto">
             <div className="mx-auto w-full">
               <DrawerHeader>
                 <DrawerTitle>
-                  {itemPreview ? itemPreview.title : "Reported Comment"}
+                  {itemPreview ? itemPreview.title : t("reportedComment")}
                 </DrawerTitle>
                 <DrawerDescription>
-                  Reported {report.target_type} &middot;{" "}
+                  {t("reportedFeedback")} &middot;{" "}
                   {new Date(report.created_at).toLocaleString()}
                 </DrawerDescription>
               </DrawerHeader>
@@ -495,12 +502,12 @@ function ReportPreview({ report, slug }: { report: Report; slug: string }) {
               <DrawerFooter>
                 {itemId && (
                   <Link href={`/w/${slug}/i/${itemId}`} className={buttonVariants({ variant: "secondary", })}>
-                    Go to Feedback
+                    {t("goToFeedback")}
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                 )}
                 <DrawerClose asChild>
-                  <Button variant="outline">Close</Button>
+                  <Button variant="outline">{tc("close")}</Button>
                 </DrawerClose>
               </DrawerFooter>
             </div>
@@ -510,7 +517,7 @@ function ReportPreview({ report, slug }: { report: Report; slug: string }) {
         {itemId && (
           <Link href={`/w/${slug}/i/${itemId}`} className={buttonVariants({ variant: "secondary", size: "sm", })}>
             <ExternalLink className="h-4 w-4 mr-1" />
-            Go to Feedback
+            {t("goToFeedback")}
           </Link>
         )}
       </div>

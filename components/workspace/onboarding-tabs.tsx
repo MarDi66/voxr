@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/lib/i18n/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowRight, LogOut } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function OnboardingTabs({
   invitedRole?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("onboarding");
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -32,8 +34,8 @@ export function OnboardingTabs({
     <div className="space-y-4">
       <Tabs defaultValue={defaultToken ? "join" : "create"}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="create">Create</TabsTrigger>
-          <TabsTrigger value="join">Join</TabsTrigger>
+          <TabsTrigger value="create">{t("create")}</TabsTrigger>
+          <TabsTrigger value="join">{t("join")}</TabsTrigger>
         </TabsList>
         <TabsContent value="create">
           <CreateWorkspaceForm />
@@ -45,11 +47,11 @@ export function OnboardingTabs({
       {existingWorkspaceSlug && (
         <div className="rounded-lg border bg-muted/50 p-4 text-center">
           <p className="text-sm text-muted-foreground">
-            You&apos;re already a member of a workspace
+            {t("alreadyMember")}
           </p>
           <Link href={`/w/${existingWorkspaceSlug}`}>
             <Button variant="link" className="mt-1">
-              Go to my workspace
+              {t("goToWorkspace")}
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </Link>
@@ -59,7 +61,7 @@ export function OnboardingTabs({
         <div className="text-center">
           <Button variant="ghost" onClick={handleSignOut} className="w-full">
             <LogOut className="mr-2 h-4 w-4" />
-            Log out
+            {t("logOut")}
           </Button>
         </div>
       )}

@@ -3,7 +3,8 @@
 import { useId, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -25,6 +26,8 @@ import {
 } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 
+import { useTranslations } from "next-intl";
+
 import { sendOtp, verifyOtp } from "@/actions/auth";
 import {
   otpRequestSchema,
@@ -33,6 +36,8 @@ import {
 } from "@/lib/validators/auth";
 
 export function AuthForm() {
+  const t = useTranslations("auth");
+  const tc = useTranslations("common");
   const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
@@ -58,7 +63,7 @@ export function AuthForm() {
     setToken("");
     setTokenError(null);
     setStep("otp");
-    toast.success("Check your email for the verification code");
+    toast.success(t("checkEmail"));
   }
 
   async function onOtpSubmit(event: FormEvent<HTMLFormElement>) {
@@ -67,7 +72,7 @@ export function AuthForm() {
 
     const parsed = otpVerifySchema.safeParse({ email, token });
     if (!parsed.success) {
-      setTokenError(parsed.error.flatten().fieldErrors.token?.[0] ?? "OTP must be 6 digits");
+      setTokenError(parsed.error.flatten().fieldErrors.token?.[0] ?? t("otpError"));
       return;
     }
 
@@ -78,7 +83,7 @@ export function AuthForm() {
         toast.error(result.error);
         return;
       }
-      toast.success("Signed in successfully");
+      toast.success(t("signedIn"));
       router.push(redirectTo);
       router.refresh();
     } finally {
@@ -90,9 +95,9 @@ export function AuthForm() {
     return (
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign in or register to Voxr</CardTitle>
+          <CardTitle className="text-2xl">{t("signInTitle")}</CardTitle>
           <CardDescription>
-            Enter your email to receive a verification code
+            {t("signInDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,9 +108,9 @@ export function AuthForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <Label htmlFor={field.name}>Email</Label>
+                    <Label htmlFor={field.name}>{t("emailLabel")}</Label>
                     <FormControl>
-                      <Input placeholder="you@company.com" type="email" {...field} />
+                      <Input placeholder={t("emailPlaceholder")} type="email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -119,7 +124,7 @@ export function AuthForm() {
                 {emailForm.formState.isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Send Code
+                {t("sendCode")}
               </Button>
             </form>
           </Form>
@@ -131,9 +136,9 @@ export function AuthForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-2xl">Enter verification code</CardTitle>
+        <CardTitle className="text-2xl">{t("verifyTitle")}</CardTitle>
         <CardDescription>
-          We sent a code to {email}
+          {t("codeSentTo", { email })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -182,7 +187,7 @@ export function AuthForm() {
               className="flex-1"
               onClick={() => setStep("email")}
             >
-              Back
+              {tc("back")}
             </Button>
             <Button
               type="submit"
@@ -192,7 +197,7 @@ export function AuthForm() {
               {isVerifying && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Verify
+              {t("verify")}
             </Button>
           </div>
         </form>

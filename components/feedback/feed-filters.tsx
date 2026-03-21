@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { useCallback, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -14,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 export function FeedFilters({ slug }: { slug: string }) {
+  const t = useTranslations("feedback");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
@@ -39,8 +42,8 @@ export function FeedFilters({ slug }: { slug: string }) {
         onValueChange={(v) => updateFilter("sort", v)}
       >
         <TabsList>
-          <TabsTrigger value="newest">Newest</TabsTrigger>
-          <TabsTrigger value="top">Top</TabsTrigger>
+          <TabsTrigger value="newest">{t("sortNewest")}</TabsTrigger>
+          <TabsTrigger value="top">{t("sortTop")}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -50,19 +53,19 @@ export function FeedFilters({ slug }: { slug: string }) {
           onValueChange={(v) => updateFilter("category", v ?? "all")}
         >
           <SelectTrigger className="w-35">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t("categoryLabel")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="idea">💡 Idea</SelectItem>
-            <SelectItem value="concern">⚠️ Concern</SelectItem>
-            <SelectItem value="praise">🎉 Praise</SelectItem>
-            <SelectItem value="question">❓ Question</SelectItem>
+            <SelectItem value="all">{t("filterAll")}</SelectItem>
+            <SelectItem value="idea">{t("categoryIdea")}</SelectItem>
+            <SelectItem value="concern">{t("categoryConcern")}</SelectItem>
+            <SelectItem value="praise">{t("categoryPraise")}</SelectItem>
+            <SelectItem value="question">{t("categoryQuestion")}</SelectItem>
           </SelectContent>
         </Select>
 
         <Input
-          placeholder="Search..."
+          placeholder={t("searchPlaceholder")}
           value={search}
           className="w-50"
           onChange={(e) => {

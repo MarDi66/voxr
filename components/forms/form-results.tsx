@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/lib/i18n/navigation";
 import { CheckCircle2, Users, XCircle } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +43,7 @@ export function FormResults({
   isOwner?: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("forms");
   const [closing, setClosing] = useState(false);
   const allAnswered = memberCount > 0 && responseCount >= memberCount;
   const isClosed = status === "closed";
@@ -66,11 +68,11 @@ export function FormResults({
               {isClosed && (
                 <Badge variant="destructive" className="gap-1">
                   <XCircle className="h-3 w-3" />
-                  Closed
+                  {t("closed")}
                 </Badge>
               )}
               <Badge variant={visibility === "public" ? "default" : "outline"}>
-                {visibility === "public" ? "Public" : "Private"} results
+                {visibility === "public" ? t("publicResults") : t("privateResults")}
               </Badge>
             </div>
           </div>
@@ -84,7 +86,7 @@ export function FormResults({
               <Users className="h-4 w-4" />
             )}
             <span className="text-sm font-medium">
-              {responseCount} / {memberCount} member{memberCount !== 1 && "s"} answered
+              {t("membersAnswered", { answered: responseCount, total: memberCount })}
             </span>
           </div>
           {isOwner && !isClosed && (
@@ -95,7 +97,7 @@ export function FormResults({
                 onClick={handleClose}
                 disabled={closing}
               >
-                {closing ? "Closing…" : "Close form"}
+                {closing ? t("closingForm") : t("closeForm")}
               </Button>
             </div>
           )}
@@ -110,7 +112,7 @@ export function FormResults({
             <CardHeader className="pb-3">
               <CardTitle className="text-base">{question.question_text}</CardTitle>
               <p className="text-xs text-muted-foreground">
-                {answers.length} answer{answers.length !== 1 && "s"}
+                {t("answerCount", { count: answers.length })}
               </p>
             </CardHeader>
             <CardContent>
@@ -127,7 +129,7 @@ export function FormResults({
       {responseCount === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No responses yet</p>
+            <p className="text-muted-foreground">{t("noResponses")}</p>
           </CardContent>
         </Card>
       )}
@@ -144,13 +146,15 @@ function QuestionResults({
   answers: string[];
   totalResponses: number;
 }) {
+  const t = useTranslations("forms");
+
   switch (question.question_type) {
     case "short_text":
     case "long_text":
       return (
         <div className="space-y-2">
           {answers.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No answers</p>
+            <p className="text-sm text-muted-foreground">{t("noAnswers")}</p>
           ) : (
             answers.map((answer, i) => (
               <div
@@ -247,8 +251,7 @@ function QuestionResults({
       return (
         <div className="space-y-4">
           <div className="text-center">
-            <span className="text-3xl font-bold">{avg.toFixed(1)}</span>
-            <span className="text-muted-foreground"> / 5 average</span>
+            <span className="text-2xl font-bold text-foreground">{t("ratingAverage", { avg: avg.toFixed(1) })}</span>
           </div>
           <Separator />
           <div className="space-y-1">

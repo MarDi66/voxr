@@ -1622,6 +1622,35 @@ export const homeCollections = {
   ),
 };
 
+import type { Locale } from "./i18n/config";
+import {
+  solutionPagesFr,
+  guidePagesFr,
+  resourcePagesFr,
+  glossaryPagesFr,
+  allContentPagesFr,
+  homeCollectionsFr,
+} from "./site-content-fr";
+
+export function getSolutionPages(locale: Locale) {
+  return locale === "fr" ? solutionPagesFr : solutionPages;
+}
+export function getGuidePages(locale: Locale) {
+  return locale === "fr" ? guidePagesFr : guidePages;
+}
+export function getResourcePages(locale: Locale) {
+  return locale === "fr" ? resourcePagesFr : resourcePages;
+}
+export function getGlossaryPages(locale: Locale) {
+  return locale === "fr" ? glossaryPagesFr : glossaryPages;
+}
+export function getAllContentPages(locale: Locale) {
+  return locale === "fr" ? allContentPagesFr : allContentPages;
+}
+export function getHomeCollections(locale: Locale) {
+  return locale === "fr" ? homeCollectionsFr : homeCollections;
+}
+
 export const staticPublicPages = [
   {
     path: "/",

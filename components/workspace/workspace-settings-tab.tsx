@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { updateWorkspaceSchema, type UpdateWorkspaceInput } from "@/lib/validators/workspaces";
 import { updateWorkspace, deleteWorkspace } from "@/actions/workspaces";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 
 type Workspace = {
   id: string;
@@ -46,6 +47,8 @@ export function WorkspaceSettingsTab({
   isOwner: boolean;
   isAdmin?: boolean;
 }) {
+  const t = useTranslations("workspace");
+  const tc = useTranslations("common");
   const canEdit = isOwner || isAdmin;
   const router = useRouter();
   const form = useForm<UpdateWorkspaceInput>({
@@ -62,7 +65,7 @@ export function WorkspaceSettingsTab({
       toast.error(result.error);
       return;
     }
-    toast.success("Workspace updated");
+    toast.success(t("workspaceUpdated"));
     router.refresh();
   }
 
@@ -72,7 +75,7 @@ export function WorkspaceSettingsTab({
       toast.error(result.error);
       return;
     }
-    toast.success("Workspace deleted");
+    toast.success(t("workspaceDeleted"));
     router.push("/onboarding");
   }
 
@@ -80,17 +83,17 @@ export function WorkspaceSettingsTab({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>General</CardTitle>
+          <CardTitle>{t("general")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Workspace Name
+              {t("nameLabel")}
             </p>
             <p className="text-lg">{workspace.name}</p>
           </div>
           <div className="text-sm text-muted-foreground">
-            Slug: <code className="rounded bg-muted px-1">{workspace.slug}</code>
+            {t("slugLabel")} <code className="rounded bg-muted px-1">{workspace.slug}</code>
           </div>
         </CardContent>
       </Card>
@@ -101,7 +104,7 @@ export function WorkspaceSettingsTab({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>General</CardTitle>
+          <CardTitle>{t("general")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -111,7 +114,7 @@ export function WorkspaceSettingsTab({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Workspace Name</FormLabel>
+                    <FormLabel>{t("nameLabel")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -120,7 +123,7 @@ export function WorkspaceSettingsTab({
                 )}
               />
               <div className="text-sm text-muted-foreground">
-                Slug: <code className="rounded bg-muted px-1">{workspace.slug}</code>
+                {t("slugLabel")} <code className="rounded bg-muted px-1">{workspace.slug}</code>
               </div>
               <Button
                 type="submit"
@@ -129,7 +132,7 @@ export function WorkspaceSettingsTab({
                 {form.formState.isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Save
+                {t("save")}
               </Button>
             </form>
           </Form>
@@ -139,34 +142,31 @@ export function WorkspaceSettingsTab({
       {isOwner && (
       <Card className="border-destructive">
         <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardTitle className="text-destructive">{t("dangerZone")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">Delete workspace</p>
+              <p className="text-sm font-medium">{t("deleteWorkspace")}</p>
               <p className="text-sm text-muted-foreground">
-                This action cannot be undone. All data will be permanently
-                deleted.
+                {t("deleteWarning")}
               </p>
             </div>
             <AlertDialog>
               <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
-                  Delete
+                  {t("delete")}
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete workspace?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete &quot;{workspace.name}&quot; and
-                    all its data including feedback, comments, and members. This
-                    action cannot be undone.
+                    {t("deleteConfirmDescription", { name: workspace.name })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDelete}>
-                    Delete Workspace
+                    {t("deleteConfirmButton")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

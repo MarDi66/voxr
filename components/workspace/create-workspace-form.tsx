@@ -2,9 +2,11 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +23,7 @@ import { createWorkspaceSchema, type CreateWorkspaceInput } from "@/lib/validato
 import { createWorkspace } from "@/actions/workspaces";
 
 export function CreateWorkspaceForm() {
+  const t = useTranslations("workspace");
   const router = useRouter();
   const form = useForm<CreateWorkspaceInput>({
     resolver: zodResolver(createWorkspaceSchema),
@@ -44,16 +47,16 @@ export function CreateWorkspaceForm() {
       toast.error(result.error);
       return;
     }
-    toast.success("Workspace created!");
+    toast.success(t("workspaceCreated"));
     router.push(`/w/${result.slug}`);
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create a workspace</CardTitle>
+        <CardTitle>{t("createTitle")}</CardTitle>
         <CardDescription>
-          Set up a new workspace for your team
+          {t("createDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -64,10 +67,10 @@ export function CreateWorkspaceForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Workspace Name</FormLabel>
+                  <FormLabel>{t("nameLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="My Company"
+                      placeholder={t("namePlaceholder")}
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
@@ -87,9 +90,9 @@ export function CreateWorkspaceForm() {
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Workspace URL</FormLabel>
+                  <FormLabel>{t("urlLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="my-company" {...field} />
+                    <Input placeholder={t("urlPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,7 +106,7 @@ export function CreateWorkspaceForm() {
               {form.formState.isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Create Workspace
+              {t("createButton")}
             </Button>
           </form>
         </Form>

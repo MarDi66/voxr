@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/lib/i18n/navigation";
 import { ClipboardList, Eye, Lock, Users, BarChart3, XCircle } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,7 @@ export function FormCard({
   slug: string;
   isOwner?: boolean;
 }) {
+  const t = useTranslations("forms");
   const isClosed = form.status === "closed";
 
   return (
@@ -42,7 +44,7 @@ export function FormCard({
             {isClosed && (
               <Badge variant="destructive" className="gap-1">
                 <XCircle className="h-3 w-3" />
-                Closed
+                {t("closed")}
               </Badge>
             )}
             <Badge variant="secondary" className="gap-1">
@@ -51,7 +53,7 @@ export function FormCard({
               ) : (
                 <Lock className="h-3 w-3" />
               )}
-              {form.visibility === "public" ? "Public" : "Private"}
+              {form.visibility === "public" ? t("public") : t("private")}
             </Badge>
           </div>
         </div>
@@ -67,7 +69,7 @@ export function FormCard({
             <span>{new Date(form.created_at).toLocaleDateString()}</span>
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              {form.responseCount} response{form.responseCount !== 1 && "s"}
+              {t("responseCount", { count: form.responseCount })}
             </span>
           </div>
           <div className="flex gap-2">
@@ -75,7 +77,7 @@ export function FormCard({
               <Link href={`/w/${slug}/forms/${form.id}/results`}>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <BarChart3 className="h-3.5 w-3.5" />
-                  Results
+                  {t("results")}
                 </Button>
               </Link>
             )}
@@ -83,13 +85,13 @@ export function FormCard({
               <Link href={`/w/${slug}/forms/${form.id}/results`}>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <BarChart3 className="h-3.5 w-3.5" />
-                  Results
+                  {t("results")}
                 </Button>
               </Link>
             )}
             {form.hasResponded ? (
               <div className={buttonVariants({ variant: "ghost", size: "sm" })}>
-                Completed
+                {t("completed")}
               </div>
             ) : !isClosed ? (
               <Link href={`/w/${slug}/forms/${form.id}`}>
@@ -97,7 +99,7 @@ export function FormCard({
                   size="sm"
                   variant="default"
                 >
-                  Fill out
+                  {t("fillOut")}
                 </Button>
               </Link>
             ) : null}

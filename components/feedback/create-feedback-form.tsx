@@ -2,9 +2,10 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,8 @@ export function CreateFeedbackForm({
   workspaceId: string;
   slug: string;
 }) {
+  const t = useTranslations("feedback");
+  const tc = useTranslations("common");
   const router = useRouter();
   const form = useForm<CreateItemInput>({
     resolver: zodResolver(createItemSchema),
@@ -52,14 +55,14 @@ export function CreateFeedbackForm({
       toast.error(result.error);
       return;
     }
-    toast.success("Feedback posted!");
+    toast.success(t("feedbackPosted"));
     router.push(`/w/${slug}/i/${result.itemId}`);
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Share your feedback</CardTitle>
+        <CardTitle>{t("shareTitle")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -69,9 +72,9 @@ export function CreateFeedbackForm({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>{t("titleLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="What's on your mind?" {...field} />
+                    <Input placeholder={t("titlePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -83,10 +86,10 @@ export function CreateFeedbackForm({
               name="body"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Details</FormLabel>
+                  <FormLabel>{t("detailsLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe your feedback in detail..."
+                      placeholder={t("detailsPlaceholder")}
                       className="min-h-30"
                       {...field}
                     />
@@ -101,21 +104,21 @@ export function CreateFeedbackForm({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>{t("categoryLabel")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder={t("categoryPlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="idea">💡 Idea</SelectItem>
-                      <SelectItem value="concern">⚠️ Concern</SelectItem>
-                      <SelectItem value="praise">🎉 Praise</SelectItem>
-                      <SelectItem value="question">❓ Question</SelectItem>
+                      <SelectItem value="idea">{t("categoryIdea")}</SelectItem>
+                      <SelectItem value="concern">{t("categoryConcern")}</SelectItem>
+                      <SelectItem value="praise">{t("categoryPraise")}</SelectItem>
+                      <SelectItem value="question">{t("categoryQuestion")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -129,7 +132,7 @@ export function CreateFeedbackForm({
                 variant="outline"
                 onClick={() => router.back()}
               >
-                Cancel
+                {tc("cancel")}
               </Button>
               <Button
                 type="submit"
@@ -138,7 +141,7 @@ export function CreateFeedbackForm({
                 {form.formState.isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Post Feedback
+                {t("postFeedback")}
               </Button>
             </div>
           </form>

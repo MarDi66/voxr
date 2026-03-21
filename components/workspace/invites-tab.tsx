@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { CopyIcon, Loader2, Plus, Trash2 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -50,6 +52,8 @@ export function InvitesTab({
 }: {
   workspaceId: string;
 }) {
+  const t = useTranslations("workspace");
+  const tc = useTranslations("common");
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -145,7 +149,7 @@ export function InvitesTab({
 
     const inviteUrl = `${window.location.origin}/onboarding?token=${result.token}`;
     await navigator.clipboard.writeText(inviteUrl);
-    toast.success("Invite link copied to clipboard!");
+    toast.success(t("inviteCopied"));
     setDialogOpen(false);
     setInviteRole("member");
     fetchInvites();
@@ -157,14 +161,14 @@ export function InvitesTab({
       toast.error(result.error);
       return;
     }
-    toast.success("Invite revoked");
+    toast.success(t("inviteRevoked"));
     fetchInvites();
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Invite Links</CardTitle>
+        <CardTitle>{t("inviteLinks")}</CardTitle>
         <Dialog open={dialogOpen} onOpenChange={(open) => {
           setDialogOpen(open);
           if (!open) setInviteRole("member");
@@ -172,14 +176,14 @@ export function InvitesTab({
           <DialogTrigger render={
             <Button size="sm">
               <Plus className="mr-1 h-4 w-4" />
-              Create Invite
+              {t("createInvite")}
             </Button>
           } />
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Invite</DialogTitle>
+              <DialogTitle>{t("createInvite")}</DialogTitle>
               <DialogDescription>
-                Choose the role for the person who will use this invite link.
+                {t("createInviteDescription")}
               </DialogDescription>
             </DialogHeader>
             <Select
@@ -190,14 +194,14 @@ export function InvitesTab({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="member">Member</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="member">{t("roleMember")}</SelectItem>
+                <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
               </SelectContent>
             </Select>
             <DialogFooter>
               <Button onClick={handleCreate} disabled={creating}>
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create &amp; Copy Link
+                {t("createAndCopyLink")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -205,17 +209,17 @@ export function InvitesTab({
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{tc("loading")}</p>
         ) : invites.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No invites yet</p>
+          <p className="text-sm text-muted-foreground">{t("noInvitesYet")}</p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Expires</TableHead>
+                <TableHead>{t("roleColumn")}</TableHead>
+                <TableHead>{t("statusColumn")}</TableHead>
+                <TableHead>{t("createdColumn")}</TableHead>
+                <TableHead>{t("expiresColumn")}</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -227,13 +231,13 @@ export function InvitesTab({
                   </TableCell>
                   <TableCell>
                     {invite.status === "used" || invite.used_at ? (
-                      <Badge variant="secondary">Used</Badge>
+                      <Badge variant="secondary">{t("statusUsed")}</Badge>
                     ) : invite.status === "expired" ||
                       (invite.expires_at &&
                         new Date(invite.expires_at) < new Date()) ? (
-                      <Badge variant="destructive">Expired</Badge>
+                      <Badge variant="destructive">{t("statusExpired")}</Badge>
                     ) : (
-                      <Badge>Active</Badge>
+                      <Badge>{t("statusActive")}</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -253,7 +257,7 @@ export function InvitesTab({
                           onClick={async () => {
                             const url = `${window.location.origin}/onboarding?token=${invite.token}`;
                             await navigator.clipboard.writeText(url);
-                            toast.success("Invite link copied to clipboard!");
+                            toast.success(t("inviteCopied"));
                           }}
                         >
                           <CopyIcon />

@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { absoluteUrl, siteConfig } from "@/lib/site-config";
 import type { FAQItem } from "@/lib/site-content";
+import { locales, localeOpenGraph, type Locale } from "@/lib/i18n/config";
+import { localizePathname } from "@/lib/i18n/slugs";
 
 type MetadataInput = {
   title: string;
   description: string;
   path: string;
+  locale?: Locale;
   index?: boolean;
   type?: "website" | "article";
 };
@@ -14,17 +17,27 @@ export function buildMetadata({
   title,
   description,
   path,
+  locale = "en",
   index = true,
   type = "website",
 }: MetadataInput): Metadata {
-  const canonical = absoluteUrl(path);
+  const localizedPath = localizePathname(path, locale);
+  const canonical = absoluteUrl(localizedPath);
   const fullTitle = `${title} | ${siteConfig.name}`;
+
+  // Build hreflang alternates
+  const languages: Record<string, string> = {};
+  for (const loc of locales) {
+    languages[loc] = absoluteUrl(localizePathname(path, loc));
+  }
+  languages["x-default"] = absoluteUrl(localizePathname(path, "en"));
 
   return {
     title: fullTitle,
     description,
     alternates: {
       canonical,
+      languages,
     },
     openGraph: {
       title: fullTitle,
@@ -32,7 +45,10 @@ export function buildMetadata({
       url: canonical,
       siteName: siteConfig.name,
       type,
-      locale: siteConfig.defaultLocale,
+      locale: localeOpenGraph[locale],
+      alternateLocale: locales
+        .filter((l) => l !== locale)
+        .map((l) => localeOpenGraph[l]),
       images: [
         {
           url: absoluteUrl(siteConfig.ogImagePath),
@@ -96,15 +112,16 @@ export function websiteSchema() {
   };
 }
 
-export function webApplicationSchema() {
+export function webApplicationSchema(description?: string) {
   return {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: siteConfig.name,
-    url: absoluteUrl("/product"),
+    url: absoluteUrl("/en/product"),
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description:
+      description ??
       "Anonymous internal feedback software for collecting employee ideas, praise, concerns, and comments inside a private workspace.",
     offers: {
       "@type": "Offer",
@@ -149,6 +166,7 @@ type ArticleSchemaInput = {
   description: string;
   path: string;
   publishedTime: string;
+  locale?: Locale;
 };
 
 export function articleSchema({
@@ -156,13 +174,15 @@ export function articleSchema({
   description,
   path,
   publishedTime,
+  locale = "en",
 }: ArticleSchemaInput) {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: title,
     description,
-    url: absoluteUrl(path),
+    url: absoluteUrl(localizePathname(path, locale)),
+    inLanguage: locale,
     datePublished: publishedTime,
     dateModified: publishedTime,
     author: {
@@ -184,17 +204,19 @@ export function definedTermSchema({
   title,
   description,
   path,
+  locale = "en",
 }: {
   title: string;
   description: string;
   path: string;
+  locale?: Locale;
 }) {
   return {
     "@context": "https://schema.org",
     "@type": "DefinedTerm",
     name: title,
     description,
-    url: absoluteUrl(path),
-    inDefinedTermSet: absoluteUrl("/glossary"),
+    url: absoluteUrl(localizePathname(path, locale)),
+    inDefinedTermSet: absoluteUrl(localizePathname("/glossary", locale)),
   };
 }
