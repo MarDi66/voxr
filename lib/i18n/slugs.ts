@@ -15,6 +15,7 @@ const staticSlugMap: Record<string, Record<string, string>> = {
     guides: "guides",
     resources: "resources",
     glossary: "glossary",
+    pricing: "pricing",
   },
   fr: {
     product: "produit",
@@ -24,6 +25,7 @@ const staticSlugMap: Record<string, Record<string, string>> = {
     guides: "guides",
     resources: "ressources",
     glossary: "glossaire",
+    pricing: "tarifs",
   },
 };
 

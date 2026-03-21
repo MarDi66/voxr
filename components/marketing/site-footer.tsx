@@ -15,6 +15,7 @@ function useFooterGroups() {
         { href: `/${localizeStaticSlug("product", locale)}`, label: tNav("product") },
         { href: `/${localizeStaticSlug("features", locale)}`, label: tNav("features") },
         { href: `/${localizeStaticSlug("security", locale)}`, label: t("securityAndPrivacy") },
+        { href: `/${localizeStaticSlug("pricing", locale)}`, label: tNav("pricing") },
       ],
     },
     {

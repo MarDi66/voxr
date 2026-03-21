@@ -18,6 +18,7 @@ function usePrimaryLinks() {
     { href: `/${localizeStaticSlug("solutions", locale)}`, label: t("solutions") },
     { href: `/${localizeStaticSlug("guides", locale)}`, label: t("guides") },
     { href: `/${localizeStaticSlug("resources", locale)}`, label: t("resources") },
+    { href: `/${localizeStaticSlug("pricing", locale)}`, label: t("pricing") },
   ];
 }
 
