@@ -499,7 +499,9 @@
     "feedbackCategoriesDescription": "Volume breakdown by category",
     "topReactions": "Top Reactions",
     "topReactionsDescription": "Most used emoji reactions across the workspace",
-    "noReactionsYet": "No reactions yet"
+    "noReactionsYet": "No reactions yet",
+    "yearlyTrends": "Yearly Trends",
+    "yearlyTrendsDescription": "Daily snapshots of key metrics over the past year"
   },
   "seo": {
     "applicationDescription": "Anonymous internal feedback software for collecting employee ideas, praise, concerns, and comments inside a private workspace."

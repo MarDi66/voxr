@@ -445,6 +445,30 @@ export async function getWorkspaceAnalytics(workspaceId: string) {
   };
 }
 
+export async function getWorkspaceAnalyticsHistory(workspaceId: string) {
+  const supabase = await createClient();
+
+  const yearAgo = new Date();
+  yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+
+  const { data } = await supabase
+    .from("analytics_snapshots")
+    .select("snapshot_date, team_members, response_rate, psychological_safety, total_feedback")
+    .eq("workspace_id", workspaceId)
+    .gte("snapshot_date", yearAgo.toISOString().split("T")[0])
+    .order("snapshot_date", { ascending: true });
+
+  return (
+    data?.map((row) => ({
+      date: row.snapshot_date,
+      teamMembers: row.team_members,
+      responseRate: row.response_rate,
+      psychologicalSafety: row.psychological_safety,
+      totalFeedback: row.total_feedback,
+    })) ?? []
+  );
+}
+
 export async function getWorkspaceForms(workspaceId: string) {
   const supabase = await createClient();
 

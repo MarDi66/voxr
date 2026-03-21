@@ -499,7 +499,9 @@
     "feedbackCategoriesDescription": "Répartition du volume par catégorie",
     "topReactions": "Réactions les plus utilisées",
     "topReactionsDescription": "Réactions emoji les plus utilisées dans l'espace de travail",
-    "noReactionsYet": "Aucune réaction pour le moment"
+    "noReactionsYet": "Aucune réaction pour le moment",
+    "yearlyTrends": "Tendances annuelles",
+    "yearlyTrendsDescription": "Instantanés quotidiens des indicateurs clés sur l'année écoulée"
   },
   "seo": {
     "applicationDescription": "Logiciel de feedback interne anonyme pour recueillir les idées, éloges, préoccupations et commentaires des employés dans un espace de travail privé."

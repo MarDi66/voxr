@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { getWorkspaceBySlug, getWorkspaceAnalytics, checkUserRole } from "@/lib/supabase/queries";
+import { getWorkspaceBySlug, getWorkspaceAnalytics, getWorkspaceAnalyticsHistory, checkUserRole } from "@/lib/supabase/queries";
 import { AnalyticsDashboard } from "@/components/workspace/analytics-dashboard";
 
 export default async function AnalyticsPage({
@@ -22,7 +22,10 @@ export default async function AnalyticsPage({
     redirect(`/w/${slug}`);
   }
 
-  const analytics = await getWorkspaceAnalytics(workspace.id);
+  const [analytics, history] = await Promise.all([
+    getWorkspaceAnalytics(workspace.id),
+    getWorkspaceAnalyticsHistory(workspace.id),
+  ]);
   const t = await getTranslations("workspace");
 
   return (
@@ -33,7 +36,7 @@ export default async function AnalyticsPage({
           {t("analyticsDescription")}
         </p>
       </div>
-      <AnalyticsDashboard data={analytics} />
+      <AnalyticsDashboard data={analytics} history={history} />
     </div>
   );
 }

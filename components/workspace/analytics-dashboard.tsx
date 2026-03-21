@@ -35,6 +35,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+type HistoryEntry = {
+  date: string;
+  teamMembers: number;
+  responseRate: number;
+  psychologicalSafety: number;
+  totalFeedback: number;
+};
+
 type AnalyticsData = {
   categoryDistribution: { category: string; count: number }[];
   weeklyWellbeing: {
@@ -74,7 +82,7 @@ const CATEGORY_COLORS = [
   "var(--color-chart-4)",
 ];
 
-export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
+export function AnalyticsDashboard({ data, history }: { data: AnalyticsData; history: HistoryEntry[] }) {
   const t = useTranslations("analytics");
 
   const categoryConfig = useMemo(() => ({
@@ -91,19 +99,35 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
   const activityConfig = useMemo(() => ({
     feedback: { label: t("feedback"), color: "var(--color-chart-1)" },
-    comments: { label: t("comments"), color: "var(--color-chart-2)" },
-    reactions: { label: t("reactions"), color: "var(--color-chart-3)" },
+    comments: { label: t("comments"), color: "var(--color-chart-4)" },
+    reactions: { label: t("reactions"), color: "var(--color-chart-5)" },
   }) satisfies ChartConfig, [t]);
 
   const wellbeingConfig = useMemo(() => ({
     score: { label: t("wellbeing"), color: "var(--color-chart-3)" },
   }) satisfies ChartConfig, [t]);
 
+  const yearlyTeamConfig = useMemo(() => ({
+    teamMembers: { label: t("teamMembers"), color: "var(--color-chart-1)" },
+  }) satisfies ChartConfig, [t]);
+
+  const yearlyResponseConfig = useMemo(() => ({
+    responseRate: { label: t("responseRate"), color: "var(--color-chart-2)" },
+  }) satisfies ChartConfig, [t]);
+
+  const yearlySafetyConfig = useMemo(() => ({
+    psychologicalSafety: { label: t("psychologicalSafety"), color: "var(--color-chart-3)" },
+  }) satisfies ChartConfig, [t]);
+
+  const yearlyFeedbackConfig = useMemo(() => ({
+    totalFeedback: { label: t("totalFeedback"), color: "var(--color-chart-4)" },
+  }) satisfies ChartConfig, [t]);
+
   const moodConfig = useMemo(() => ({
     value: { label: t("reactions") },
-    positive: { label: t("positive"), color: "var(--color-chart-3)" },
-    neutral: { label: t("neutral"), color: "var(--color-chart-4)" },
-    negative: { label: t("negative"), color: "var(--color-chart-2)" },
+    positive: { label: t("positive"), color: "oklch(0.72 0.19 142)" },
+    neutral: { label: t("neutral"), color: "oklch(0.80 0.15 85)" },
+    negative: { label: t("negative"), color: "oklch(0.64 0.2 25)" },
   }) satisfies ChartConfig, [t]);
 
   function getWellbeingLabel(score: number) {
@@ -119,9 +143,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
   }
 
   const moodData = [
-    { name: "positive", value: data.reactionMood.positive, fill: "var(--color-chart-3)" },
-    { name: "neutral", value: data.reactionMood.neutral, fill: "var(--color-chart-4)" },
-    { name: "negative", value: data.reactionMood.negative, fill: "var(--color-chart-2)" },
+    { name: "positive", value: data.reactionMood.positive, fill: "oklch(0.72 0.19 142)" },
+    { name: "neutral", value: data.reactionMood.neutral, fill: "oklch(0.80 0.15 85)" },
+    { name: "negative", value: data.reactionMood.negative, fill: "oklch(0.64 0.2 25)" },
   ];
 
   const wellbeingData = [
@@ -202,16 +226,7 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                   dominantBaseline="middle"
                   className="fill-foreground text-3xl font-bold"
                 >
-                  {data.wellbeingScore}
-                </text>
-                <text
-                  x="50%"
-                  y="60%"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="fill-muted-foreground text-sm"
-                >
-                  / 100
+                  {data.wellbeingScore}%
                 </text>
               </RadialBarChart>
             </ChartContainer>
@@ -294,8 +309,8 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Line type="monotone" dataKey="feedback" stroke="var(--color-chart-1)" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="comments" stroke="var(--color-chart-2)" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="reactions" stroke="var(--color-chart-3)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="comments" stroke="var(--color-chart-4)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="reactions" stroke="var(--color-chart-5)" strokeWidth={2} dot={false} />
             </LineChart>
           </ChartContainer>
         </CardContent>
@@ -362,6 +377,112 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Yearly Trends */}
+      {history.length > 0 && (
+        <>
+          <div>
+            <h2 className="text-xl font-semibold">{t("yearlyTrends")}</h2>
+            <p className="text-sm text-muted-foreground">
+              {t("yearlyTrendsDescription")}
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("teamMembers")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={yearlyTeamConfig} className="h-50 w-full">
+                  <AreaChart data={history}>
+                    <defs>
+                      <linearGradient id="teamGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="teamMembers" stroke="var(--color-chart-1)" strokeWidth={2} fill="url(#teamGradient)" />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("responseRate")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={yearlyResponseConfig} className="h-50 w-full">
+                  <AreaChart data={history}>
+                    <defs>
+                      <linearGradient id="responseGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--color-chart-2)" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="var(--color-chart-2)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="responseRate" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#responseGradient)" />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("psychologicalSafety")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={yearlySafetyConfig} className="h-50 w-full">
+                  <AreaChart data={history}>
+                    <defs>
+                      <linearGradient id="safetyGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--color-chart-3)" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="var(--color-chart-3)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="psychologicalSafety" stroke="var(--color-chart-3)" strokeWidth={2} fill="url(#safetyGradient)" />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("totalFeedback")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={yearlyFeedbackConfig} className="h-50 w-full">
+                  <AreaChart data={history}>
+                    <defs>
+                      <linearGradient id="feedbackGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--color-chart-4)" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="var(--color-chart-4)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="totalFeedback" stroke="var(--color-chart-4)" strokeWidth={2} fill="url(#feedbackGradient)" />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }
