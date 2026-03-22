@@ -31,6 +31,13 @@ export type WorkspaceBillingSummary = {
   subscription: BillingSubscriptionRecord | null;
 };
 
+export type OwnedWorkspace = {
+  id: string;
+  name: string;
+  slug: string;
+  currentPlanKey: PlanKey;
+};
+
 function isEntitledStatus(status: string) {
   return ENTITLED_SUBSCRIPTION_STATUSES.includes(
     status as (typeof ENTITLED_SUBSCRIPTION_STATUSES)[number]
@@ -127,7 +134,7 @@ export async function getOwnedWorkspaces(supabase?: SupabaseLike) {
     return [];
   }
 
-  return (data ?? [])
+  const workspaces = (data ?? [])
     .map((entry) => {
       const workspaceRecord = entry.workspaces as unknown as
         | { id: string; name: string; slug: string }
@@ -141,4 +148,39 @@ export async function getOwnedWorkspaces(supabase?: SupabaseLike) {
       return workspaceRecord;
     })
     .filter((workspace): workspace is { id: string; name: string; slug: string } => !!workspace);
+
+  if (workspaces.length === 0) {
+    return [];
+  }
+
+  const workspaceIds = workspaces.map((workspace) => workspace.id);
+  const { data: subscriptions } = await client
+    .from("billing_subscriptions")
+    .select("*")
+    .in("workspace_id", workspaceIds)
+    .in("status", [...ENTITLED_SUBSCRIPTION_STATUSES])
+    .order("current_period_end", { ascending: false, nullsFirst: false });
+
+  const activeSubscriptionByWorkspace = new Map<string, BillingSubscriptionRecord>();
+
+  for (const row of (subscriptions ?? []) as BillingSubscriptionRecord[]) {
+    if (
+      !row.workspace_id ||
+      activeSubscriptionByWorkspace.has(row.workspace_id)
+    ) {
+      continue;
+    }
+
+    if (row.current_period_end && new Date(row.current_period_end) < new Date()) {
+      continue;
+    }
+
+    activeSubscriptionByWorkspace.set(row.workspace_id, row);
+  }
+
+  return workspaces.map((workspace) => ({
+    ...workspace,
+    currentPlanKey:
+      activeSubscriptionByWorkspace.get(workspace.id)?.plan_key ?? "free",
+  })) satisfies OwnedWorkspace[];
 }

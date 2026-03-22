@@ -226,3 +226,51 @@ export async function syncStripeSubscription(
     throw new Error(error.message);
   }
 }
+
+export async function upgradeStripeSubscription(input: {
+  stripeSubscriptionId: string;
+  planKey: BillablePlanKey;
+  ownerUserId: string;
+  workspaceId?: string | null;
+}) {
+  const priceId = getStripePriceId(input.planKey);
+  if (!priceId) {
+    throw new Error(`Missing Stripe price id for ${input.planKey}`);
+  }
+
+  const currentSubscription = await stripe.subscriptions.retrieve(
+    input.stripeSubscriptionId
+  );
+  const currentItem = currentSubscription.items.data[0];
+
+  if (!currentItem) {
+    throw new Error("Stripe subscription has no updatable item");
+  }
+
+  const updatedSubscription = await stripe.subscriptions.update(
+    input.stripeSubscriptionId,
+    {
+      cancel_at_period_end: false,
+      proration_behavior: "create_prorations",
+      items: [
+        {
+          id: currentItem.id,
+          price: priceId,
+        },
+      ],
+      metadata: {
+        ...currentSubscription.metadata,
+        ownerUserId: input.ownerUserId,
+        planKey: input.planKey,
+        workspaceId: input.workspaceId ?? "",
+      },
+    }
+  );
+
+  await syncStripeSubscription(updatedSubscription, {
+    ownerUserId: input.ownerUserId,
+    workspaceId: input.workspaceId,
+  });
+
+  return updatedSubscription;
+}

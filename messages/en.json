@@ -218,7 +218,22 @@
     "subscriptionActiveTitle": "Subscription is active",
     "subscriptionActiveDescription": "{plan} is now attached to your workspace.",
     "goToBilling": "Go to billing",
-    "goToWorkspace": "Go to workspace"
+    "goToWorkspace": "Go to workspace",
+    "checkoutWorkspaceTitle": "Choose a workspace for {plan}",
+    "checkoutWorkspaceDescription": "Select an existing workspace you own, or create a new one before continuing to Stripe Checkout.",
+    "selectWorkspaceTitle": "Use an existing workspace",
+    "selectWorkspaceDescription": "Only workspaces you own can be subscribed.",
+    "continueToCheckout": "Continue to checkout",
+    "upgradeWorkspace": "Upgrade workspace",
+    "viewBilling": "View billing",
+    "workspaceCurrentPlan": "Current plan: {plan}",
+    "alreadyOnSelectedPlan": "This workspace is already on the selected plan.",
+    "upgradeFromCurrentPlan": "This workspace will be upgraded from {plan}.",
+    "createBeforeCheckoutTitle": "Create a workspace first",
+    "createBeforeCheckoutDescription": "Create a workspace now and continue to Stripe with it selected.",
+    "createAndContinueToCheckout": "Create and continue",
+    "workspaceReadyForCheckout": "Workspace created. Continuing to checkout.",
+    "workspaceCreateFailed": "We could not create the workspace before checkout."
   },
   "billingErrors": {
     "memberLimitReached": "This workspace has reached its member limit for the current plan.",

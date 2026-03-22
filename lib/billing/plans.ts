@@ -36,6 +36,12 @@ export const PLAN_CONFIG: Record<PlanKey, PlanConfig> = {
   },
 };
 
+export const PLAN_ORDER: Record<PlanKey, number> = {
+  free: 0,
+  pro: 1,
+  enterprise: 2,
+};
+
 export const ENTITLED_SUBSCRIPTION_STATUSES = [
   "active",
   "trialing",
@@ -47,4 +53,8 @@ export type EntitledSubscriptionStatus =
 
 export function isBillablePlanKey(value: string): value is BillablePlanKey {
   return BILLABLE_PLAN_KEYS.includes(value as BillablePlanKey);
+}
+
+export function comparePlanOrder(left: PlanKey, right: PlanKey) {
+  return PLAN_ORDER[left] - PLAN_ORDER[right];
 }

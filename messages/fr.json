@@ -218,7 +218,22 @@
     "subscriptionActiveTitle": "L’abonnement est actif",
     "subscriptionActiveDescription": "{plan} est maintenant associé à votre espace de travail.",
     "goToBilling": "Aller à la facturation",
-    "goToWorkspace": "Aller à l’espace de travail"
+    "goToWorkspace": "Aller à l’espace de travail",
+    "checkoutWorkspaceTitle": "Choisissez un espace de travail pour {plan}",
+    "checkoutWorkspaceDescription": "Sélectionnez un espace existant dont vous êtes propriétaire, ou créez-en un nouveau avant de continuer vers Stripe Checkout.",
+    "selectWorkspaceTitle": "Utiliser un espace existant",
+    "selectWorkspaceDescription": "Seuls les espaces dont vous êtes propriétaire peuvent être abonnés.",
+    "continueToCheckout": "Continuer vers le paiement",
+    "upgradeWorkspace": "Mettre à niveau l’espace",
+    "viewBilling": "Voir la facturation",
+    "workspaceCurrentPlan": "Offre actuelle : {plan}",
+    "alreadyOnSelectedPlan": "Cet espace de travail est déjà sur l’offre sélectionnée.",
+    "upgradeFromCurrentPlan": "Cet espace de travail sera mis à niveau depuis {plan}.",
+    "createBeforeCheckoutTitle": "Créer un espace avant le paiement",
+    "createBeforeCheckoutDescription": "Créez un espace maintenant et continuez vers Stripe avec cet espace sélectionné.",
+    "createAndContinueToCheckout": "Créer et continuer",
+    "workspaceReadyForCheckout": "Espace créé. Redirection vers le paiement.",
+    "workspaceCreateFailed": "Impossible de créer l’espace de travail avant le paiement."
   },
   "billingErrors": {
     "memberLimitReached": "Cet espace de travail a atteint sa limite de membres pour l’offre actuelle.",
