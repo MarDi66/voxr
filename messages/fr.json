@@ -49,7 +49,7 @@
     "label": "Langue"
   },
   "auth": {
-    "signInTitle": "Se connecter ou s'inscrire à Voxr",
+    "signInTitle": "Se connecter ou s'inscrire",
     "signInDescription": "Entrez votre email pour recevoir un code de vérification",
     "emailLabel": "Email",
     "emailPlaceholder": "vous@entreprise.com",
@@ -61,7 +61,8 @@
     "signedIn": "Connexion réussie",
     "verify": "Vérifier",
     "metaTitle": "Se connecter",
-    "metaDescription": "Connectez-vous pour accéder à votre espace de travail Voxr privé."
+    "metaDescription": "Connectez-vous pour accéder à votre espace de travail Voxr privé.",
+    "backToHome": "Retour à l'accueil"
   },
   "onboarding": {
     "create": "Créer",
