@@ -1,4 +1,3 @@
-import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import VoxrLogo from "@/components/common/logo";
 import { ArrowRight } from "lucide-react";
@@ -6,10 +5,12 @@ import { SiteHeaderMobileNav } from "@/components/marketing/site-header-mobile-n
 import { LocaleSwitcher } from "@/components/marketing/locale-switcher";
 import { localizeStaticSlug } from "@/lib/i18n/slugs";
 import type { Locale } from "@/lib/i18n/config";
+import { createClient } from "@/lib/supabase/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
-function usePrimaryLinks() {
-  const t = useTranslations("nav");
-  const locale = useLocale() as Locale;
+async function getPrimaryLinks() {
+  const t = await getTranslations("nav");
+  const locale = await getLocale() as Locale;
 
   return [
     { href: `/${localizeStaticSlug("product", locale)}`, label: t("product") },
@@ -22,9 +23,13 @@ function usePrimaryLinks() {
   ];
 }
 
-export function SiteHeader() {
-  const t = useTranslations("nav");
-  const primaryLinks = usePrimaryLinks();
+export async function SiteHeader() {
+  const t = await getTranslations("nav");
+  const primaryLinks = await getPrimaryLinks();
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isLoggedIn = !!user;
 
   return (
     <header className="sticky top-0.75 z-40 border-b border-[#2A2722] bg-[#0C0B09]/90 backdrop-blur-lg">
@@ -57,22 +62,34 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-5 md:flex">
           <LocaleSwitcher />
-          <Link
-            href="/auth"
-            className="text-sm text-[#8A857C] transition-colors hover:text-[#EAE6DF]"
-          >
-            {t("signIn")}
-          </Link>
-          <Link
-            href="/auth"
-            className="inline-flex items-center gap-2 rounded-lg bg-terracotta px-4 py-2 text-sm font-medium text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
-          >
-            {t("getStarted")}
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/w/onboarding"
+              className="inline-flex items-center gap-2 rounded-lg bg-terracotta px-4 py-2 text-sm font-medium text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
+            >
+              {t("goToWorkspace")}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth"
+                className="text-sm text-[#8A857C] transition-colors hover:text-[#EAE6DF]"
+              >
+                {t("signIn")}
+              </Link>
+              <Link
+                href="/auth"
+                className="inline-flex items-center gap-2 rounded-lg bg-terracotta px-4 py-2 text-sm font-medium text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
+              >
+                {t("getStarted")}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </>
+          )}
         </div>
 
-        <SiteHeaderMobileNav links={primaryLinks} />
+        <SiteHeaderMobileNav links={primaryLinks} isLoggedIn={isLoggedIn} />
       </div>
     </header>
   );

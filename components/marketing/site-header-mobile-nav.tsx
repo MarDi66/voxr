@@ -17,9 +17,10 @@ type SiteHeaderMobileNavProps = {
     href: string;
     label: string;
   }>;
+  isLoggedIn: boolean;
 };
 
-export function SiteHeaderMobileNav({ links }: SiteHeaderMobileNavProps) {
+export function SiteHeaderMobileNav({ links, isLoggedIn }: SiteHeaderMobileNavProps) {
   const [open, setOpen] = useState(false);
   const t = useTranslations("nav");
 
@@ -69,21 +70,34 @@ export function SiteHeaderMobileNav({ links }: SiteHeaderMobileNavProps) {
             <div className="flex items-center justify-between px-3 py-2">
               <LocaleSwitcher />
             </div>
-            <Link
-              href="/auth"
-              onClick={handleNavigate}
-              className="rounded-xl px-3 py-3 text-sm text-[#C4BEB5] transition-colors hover:bg-[#1B1713] hover:text-[#EAE6DF]"
-            >
-              {t("signIn")}
-            </Link>
-            <Link
-              href="/auth"
-              onClick={handleNavigate}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-terracotta px-4 py-3 text-sm font-medium text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
-            >
-              {t("getStarted")}
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/w/onboarding"
+                onClick={handleNavigate}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-terracotta px-4 py-3 text-sm font-medium text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
+              >
+                {t("goToWorkspace")}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/auth"
+                  onClick={handleNavigate}
+                  className="rounded-xl px-3 py-3 text-sm text-[#C4BEB5] transition-colors hover:bg-[#1B1713] hover:text-[#EAE6DF]"
+                >
+                  {t("signIn")}
+                </Link>
+                <Link
+                  href="/auth"
+                  onClick={handleNavigate}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-terracotta px-4 py-3 text-sm font-medium text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
+                >
+                  {t("getStarted")}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </DialogContent>
