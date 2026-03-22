@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 
 import { createInvite, revokeInvite } from "@/actions/workspaces";
+import { getActionErrorMessage } from "@/lib/action-error-message";
 import { createClient } from "@/lib/supabase/client";
 
 type Invite = {
@@ -54,6 +55,7 @@ export function InvitesTab({
 }) {
   const t = useTranslations("workspace");
   const tc = useTranslations("common");
+  const te = useTranslations("billingErrors");
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -143,7 +145,7 @@ export function InvitesTab({
     setCreating(false);
 
     if (result.error) {
-      toast.error(result.error);
+      toast.error(getActionErrorMessage(result.error, te));
       return;
     }
 
@@ -158,7 +160,7 @@ export function InvitesTab({
   async function handleRevoke(inviteId: string) {
     const result = await revokeInvite(inviteId);
     if (result.error) {
-      toast.error(result.error);
+      toast.error(getActionErrorMessage(result.error, te));
       return;
     }
     toast.success(t("inviteRevoked"));

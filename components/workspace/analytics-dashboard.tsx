@@ -200,6 +200,39 @@ export function AnalyticsDashboard({ data, history }: { data: AnalyticsData; his
         </Card>
       </div>
 
+            {/* Wellbeing Trend Over Time */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("wellbeingTrend")}</CardTitle>
+          <CardDescription>
+            {t("wellbeingTrendDescription")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={wellbeingTrendConfig} className="h-75 w-full">
+            <AreaChart data={data.weeklyWellbeing}>
+              <defs>
+                <linearGradient id="wellbeingGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-chart-3)" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="var(--color-chart-3)" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tickMargin={8} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area
+                type="monotone"
+                dataKey="score"
+                stroke="var(--color-chart-3)"
+                strokeWidth={2}
+                fill="url(#wellbeingGradient)"
+              />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
       {/* Row: Wellbeing Score + Reaction Mood */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -258,39 +291,6 @@ export function AnalyticsDashboard({ data, history }: { data: AnalyticsData; his
           </CardContent>
         </Card>
       </div>
-
-      {/* Wellbeing Trend Over Time */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("wellbeingTrend")}</CardTitle>
-          <CardDescription>
-            {t("wellbeingTrendDescription")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={wellbeingTrendConfig} className="h-75 w-full">
-            <AreaChart data={data.weeklyWellbeing}>
-              <defs>
-                <linearGradient id="wellbeingGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-chart-3)" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="var(--color-chart-3)" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tickMargin={8} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Area
-                type="monotone"
-                dataKey="score"
-                stroke="var(--color-chart-3)"
-                strokeWidth={2}
-                fill="url(#wellbeingGradient)"
-              />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
 
       {/* Activity Over Time */}
       <Card>

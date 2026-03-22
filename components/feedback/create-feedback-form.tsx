@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { createItemSchema, type CreateItemInput } from "@/lib/validators/feedback";
 import { createItem } from "@/actions/feedback";
+import { getActionErrorMessage } from "@/lib/action-error-message";
 
 export function CreateFeedbackForm({
   workspaceId,
@@ -38,6 +39,7 @@ export function CreateFeedbackForm({
 }) {
   const t = useTranslations("feedback");
   const tc = useTranslations("common");
+  const te = useTranslations("billingErrors");
   const router = useRouter();
   const form = useForm<CreateItemInput>({
     resolver: zodResolver(createItemSchema),
@@ -52,7 +54,7 @@ export function CreateFeedbackForm({
   async function onSubmit(data: CreateItemInput) {
     const result = await createItem(data);
     if (result.error) {
-      toast.error(result.error);
+      toast.error(getActionErrorMessage(result.error, te));
       return;
     }
     toast.success(t("feedbackPosted"));

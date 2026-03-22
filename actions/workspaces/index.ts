@@ -1,5 +1,6 @@
 "use server";
 
+import { getWorkspaceLimitError } from "@/lib/billing/limits";
 import { createClient } from "@/lib/supabase/server";
 import {
   createWorkspaceSchema,
@@ -11,6 +12,43 @@ import crypto from "crypto";
 
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+async function insertWorkspaceForUser(input: {
+  userId: string;
+  name: string;
+  slug: string;
+}) {
+  const supabase = await createClient();
+  const workspaceId = crypto.randomUUID();
+
+  const { error: wsError } = await supabase.from("workspaces").insert({
+    id: workspaceId,
+    name: input.name,
+    slug: input.slug,
+    created_by: input.userId,
+  });
+
+  if (wsError) {
+    if (wsError.code === "23505") {
+      return { error: "This slug is already taken" };
+    }
+
+    return { error: wsError.message };
+  }
+
+  const { error: memberError } = await supabase.from("workspace_members").insert({
+    workspace_id: workspaceId,
+    user_id: input.userId,
+    role: "owner",
+    status: "active",
+  });
+
+  if (memberError) {
+    return { error: memberError.message };
+  }
+
+  return { success: true, workspaceId };
 }
 
 export async function createWorkspace(input: { name: string; slug: string }) {
@@ -28,42 +66,21 @@ export async function createWorkspace(input: { name: string; slug: string }) {
     return { error: "Not authenticated" };
   }
 
-  const workspaceId = crypto.randomUUID();
+  const result = await insertWorkspaceForUser({
+    userId: user.id,
+    name: parsed.data.name,
+    slug: parsed.data.slug,
+  });
 
-  // Avoid selecting the inserted row here: the creator is not yet a member,
-  // so the current workspace SELECT policy would reject the return payload.
-  const { error: wsError } = await supabase
-    .from("workspaces")
-    .insert({
-      id: workspaceId,
-      name: parsed.data.name,
-      slug: parsed.data.slug,
-      created_by: user.id,
-    })
-
-  if (wsError) {
-    if (wsError.code === "23505") {
-      return { error: "This slug is already taken" };
-    }
-
-    return { error: wsError.message };
+  if ("error" in result) {
+    return { error: result.error };
   }
 
-  // Add creator as owner
-  const { error: memberError } = await supabase
-    .from("workspace_members")
-    .insert({
-      workspace_id: workspaceId,
-      user_id: user.id,
-      role: "owner",
-      status: "active",
-    });
-
-  if (memberError) {
-    return { error: memberError.message };
-  }
-
-  return { success: true, slug: parsed.data.slug };
+  return {
+    success: true,
+    slug: parsed.data.slug,
+    workspaceId: result.workspaceId,
+  };
 }
 
 export async function consumeInvite(input: { inviteToken: string }) {
@@ -120,6 +137,14 @@ export async function consumeInvite(input: { inviteToken: string }) {
       .eq("id", invite.workspace_id)
       .single();
     return { success: true, slug: ws?.slug || "" };
+  }
+
+  const memberLimitError = await getWorkspaceLimitError(
+    invite.workspace_id,
+    "members"
+  );
+  if (memberLimitError) {
+    return { error: memberLimitError };
   }
 
   // Create membership with the role specified in the invite
@@ -189,6 +214,14 @@ export async function createInvite(input: {
 
   if (!user) {
     return { error: "Not authenticated" };
+  }
+
+  const memberLimitError = await getWorkspaceLimitError(
+    parsed.data.workspaceId,
+    "members"
+  );
+  if (memberLimitError) {
+    return { error: memberLimitError };
   }
 
   // Generate secure token

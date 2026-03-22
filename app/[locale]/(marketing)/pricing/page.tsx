@@ -12,6 +12,8 @@ import { JsonLd } from "@/components/marketing/json-ld";
 import { buildMetadata, breadcrumbSchema, faqSchema } from "@/lib/seo";
 import type { Locale } from "@/lib/i18n/config";
 import { localizeStaticSlug } from "@/lib/i18n/slugs";
+import { createClient } from "@/lib/supabase/server";
+import { buildAuthRedirectHref } from "@/lib/auth-redirect";
 
 export async function generateMetadata({
   params,
@@ -38,6 +40,15 @@ export default async function PricingPage({
   const loc = locale as Locale;
   const t = await getTranslations("pricingPage");
   const tc = await getTranslations("common");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const freeHref = user ? "/onboarding" : buildAuthRedirectHref("/onboarding");
+  const proHref = user ? "/checkout/pro" : buildAuthRedirectHref("/checkout/pro");
+  const enterpriseHref = user
+    ? "/checkout/enterprise"
+    : buildAuthRedirectHref("/checkout/enterprise");
 
   const crumbs = [
     { label: tc("home"), href: "/" },
@@ -109,7 +120,7 @@ export default async function PricingPage({
 
           <div className="mt-auto pt-8">
             <Link
-              href="/auth"
+              href={freeHref}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#2A2722] px-6 py-3 text-sm font-medium text-[#EAE6DF] transition-all hover:border-[#3A3630] hover:bg-[#1E1D1A]"
             >
               {t("freeCta")}
@@ -152,7 +163,7 @@ export default async function PricingPage({
 
           <div className="mt-auto pt-8">
             <Link
-              href="/auth"
+              href={proHref}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-terracotta px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-terracotta/20 transition-all hover:-translate-y-px hover:shadow-md hover:shadow-terracotta/25"
             >
               {t("proCta")}
@@ -210,7 +221,7 @@ export default async function PricingPage({
 
           <div className="mt-auto pt-8">
             <Link
-              href="/auth"
+              href={enterpriseHref}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#2A2722] px-6 py-3 text-sm font-medium text-[#EAE6DF] transition-all hover:border-[#3A3630] hover:bg-[#1E1D1A]"
             >
               {t("enterpriseCta")}

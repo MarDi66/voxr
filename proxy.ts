@@ -101,7 +101,7 @@ export async function proxy(request: NextRequest) {
   const localeForAuth = effectiveSegments[0] as Locale;
   const pathAfterLocale = effectiveSegments.slice(1).join("/");
 
-  const privateRoutePrefixes = ["w", "onboarding", "app", "dashboard"];
+  const privateRoutePrefixes = ["w", "onboarding", "app", "dashboard", "billing", "checkout"];
   const isPrivateRoute = privateRoutePrefixes.some(
     (route) => pathAfterLocale === route || pathAfterLocale.startsWith(`${route}/`)
   );

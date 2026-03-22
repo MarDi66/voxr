@@ -1,17 +1,21 @@
 import { Link } from "@/lib/i18n/navigation";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { getWorkspaceBySlug, checkUserRole } from "@/lib/supabase/queries";
 import { SettingsTabs } from "@/components/workspace/settings-tabs";
 import { Button } from "@/components/ui/button";
+import { getWorkspaceBillingSummary } from "@/lib/billing/queries";
 
 export default async function SettingsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getLocale();
   const workspace = await getWorkspaceBySlug(slug);
 
   if (!workspace) {
@@ -23,7 +27,11 @@ export default async function SettingsPage({
     redirect(`/w/${slug}`);
   }
 
-  const t = await getTranslations("workspace");
+  const [t, billingSummary, resolvedSearchParams] = await Promise.all([
+    getTranslations("workspace"),
+    getWorkspaceBillingSummary(workspace.id),
+    searchParams,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -35,7 +43,13 @@ export default async function SettingsPage({
         </Link>
         <h1 className="text-2xl font-bold">{t("settingsTitle")}</h1>
       </div>
-      <SettingsTabs workspace={workspace} role={role} />
+      <SettingsTabs
+        workspace={workspace}
+        role={role}
+        billingSummary={billingSummary}
+        locale={locale}
+        defaultTab={resolvedSearchParams.tab}
+      />
     </div>
   );
 }

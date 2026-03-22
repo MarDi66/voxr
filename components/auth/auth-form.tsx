@@ -34,6 +34,7 @@ import {
   type OtpRequestInput,
   otpVerifySchema,
 } from "@/lib/validators/auth";
+import { sanitizeInternalRedirectPath } from "@/lib/auth-redirect";
 
 export function AuthForm() {
   const t = useTranslations("auth");
@@ -46,7 +47,7 @@ export function AuthForm() {
   const otpFieldId = useId();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("next") || "/onboarding";
+  const redirectTo = sanitizeInternalRedirectPath(searchParams.get("next"));
 
   const emailForm = useForm<OtpRequestInput>({
     resolver: zodResolver(otpRequestSchema),

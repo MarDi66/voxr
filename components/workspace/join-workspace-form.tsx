@@ -21,9 +21,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { joinWorkspaceSchema, type JoinWorkspaceInput } from "@/lib/validators/workspaces";
 import { consumeInvite } from "@/actions/workspaces";
+import { getActionErrorMessage } from "@/lib/action-error-message";
 
 export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName, invitedRole }: { defaultToken?: string; invitedWorkspaceName?: string | null; invitedRole?: string }) {
   const t = useTranslations("workspace");
+  const te = useTranslations("billingErrors");
   const router = useRouter();
   const form = useForm<JoinWorkspaceInput>({
     resolver: zodResolver(joinWorkspaceSchema),
@@ -33,7 +35,7 @@ export function JoinWorkspaceForm({ defaultToken, invitedWorkspaceName, invitedR
   async function onSubmit(data: JoinWorkspaceInput) {
     const result = await consumeInvite(data);
     if (result.error) {
-      toast.error(result.error);
+      toast.error(getActionErrorMessage(result.error, te));
       return;
     }
     toast.success(t("joinedWorkspace"));

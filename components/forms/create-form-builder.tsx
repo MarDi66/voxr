@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { createForm } from "@/actions/forms";
+import { getActionErrorMessage } from "@/lib/action-error-message";
 
 type QuestionType = "short_text" | "long_text" | "single_choice" | "multiple_choice" | "rating";
 
@@ -216,6 +217,7 @@ export function CreateFormBuilder({
 }) {
   const t = useTranslations("forms");
   const tc = useTranslations("common");
+  const te = useTranslations("billingErrors");
   const router = useRouter();
   const dndId = useId();
   const [title, setTitle] = useState("");
@@ -320,7 +322,7 @@ export function CreateFormBuilder({
     setIsSubmitting(false);
 
     if (result.error) {
-      toast.error(result.error);
+      toast.error(getActionErrorMessage(result.error, te));
       return;
     }
 

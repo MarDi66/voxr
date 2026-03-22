@@ -1,5 +1,6 @@
 "use server";
 
+import { getWorkspaceLimitError } from "@/lib/billing/limits";
 import { createClient } from "@/lib/supabase/server";
 import { encrypt } from "@/lib/encryption";
 import { createItemSchema, updateItemSchema } from "@/lib/validators/feedback";
@@ -23,6 +24,14 @@ export async function createItem(input: {
 
   if (!user) {
     return { error: "Not authenticated" };
+  }
+
+  const limitError = await getWorkspaceLimitError(
+    parsed.data.workspaceId,
+    "feedbackItems"
+  );
+  if (limitError) {
+    return { error: limitError };
   }
 
   const itemId = crypto.randomUUID();

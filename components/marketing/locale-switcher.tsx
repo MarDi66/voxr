@@ -65,7 +65,7 @@ export function LocaleSwitcher() {
 
   function handleSwitch(targetLocale: Locale) {
     if (targetLocale === locale) return;
-    window.location.href = buildTargetUrl(targetLocale);
+    window.location.assign(buildTargetUrl(targetLocale));
   }
 
   return (
